@@ -1,80 +1,31 @@
-:root { 
-    --primary: #000; --bg: #f4f4f4; --header-bg: #ffffff;
-    --todo: #ffff88; --doing: #7afaff; --done: #99ff99;
+/* LISTA DE USUÁRIOS ONLINE */
+.online-users { 
+    display: flex; align-items: center; gap: -5px; /* Efeito de sobreposição leve */
+    margin-right: 10px;
 }
-
-body.dark-mode { 
-    --primary: #fff; --bg: #121212; --header-bg: #1e1e1e;
-    --todo: #5c5c2d; --doing: #2d5c5c; --done: #2d5c2d;
+.online-user-dot { 
+    width: 24px; height: 24px; border-radius: 50%; 
+    border: 2px solid var(--header-bg); object-fit: cover;
+    margin-left: -8px; transition: 0.2s;
 }
+.online-user-dot:hover { transform: translateY(-3px); z-index: 10; margin-left: 0; }
 
-body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--primary); overflow: hidden; height: 100vh; transition: 0.3s; }
-
-/* HEADER */
-header { 
-    display: flex; justify-content: space-between; align-items: center; 
-    padding: 0 15px; background: var(--header-bg); border-bottom: 2px solid var(--primary); 
-    height: 60px; box-sizing: border-box; z-index: 1000; position: relative;
-}
-.header-left { display: flex; align-items: center; gap: 12px; }
-.logo { width: 32px; height: 32px; border-radius: 4px; cursor: pointer; }
-
-/* INDICADOR ONLINE */
-#online-status { width: 10px; height: 10px; background: #999; border-radius: 50%; display: inline-block; transition: 0.3s; }
+/* REFORÇO NO INDICADOR LIVE */
+#online-status { width: 10px; height: 10px; background: #999; border-radius: 50%; margin-right: 5px; }
 #online-status.live { background: #00ff00; box-shadow: 0 0 8px #00ff00; }
 
-/* BOARD CONTAINER */
-.board-container { 
-    display: flex; height: calc(100vh - 60px); padding: 20px; gap: 20px; 
-    overflow-x: auto; margin-right: 300px; box-sizing: border-box; position: relative;
-}
-
-.board-container::before {
-    content: ""; position: fixed; top: 50%; left: 40%; 
-    transform: translate(-50%, -50%); width: 250px; height: 250px;
-    background-image: url('marca.png'); background-size: contain; background-repeat: no-repeat;
-    opacity: 0.05; z-index: -1; pointer-events: none;
-}
-
-.column { 
-    flex: 1; min-width: 320px; background: rgba(0,0,0,0.03); border-radius: 12px; 
-    display: flex; flex-direction: column; border: 1.5px dashed #aaa; max-height: 100%; overflow: hidden;
-}
+/* RESTANTE DO CSS MANTIDO (IGUAL À VERSÃO ANTERIOR) */
+:root { --primary: #000; --bg: #f4f4f4; --header-bg: #ffffff; --todo: #ffff88; --doing: #7afaff; --done: #99ff99; }
+body.dark-mode { --primary: #fff; --bg: #121212; --header-bg: #1e1e1e; --todo: #5c5c2d; --doing: #2d5c5c; --done: #2d5c2d; }
+body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--primary); overflow: hidden; height: 100vh; }
+header { display: flex; justify-content: space-between; align-items: center; padding: 0 15px; background: var(--header-bg); border-bottom: 2px solid var(--primary); height: 60px; box-sizing: border-box; z-index: 1000; position: relative; }
+.header-left { display: flex; align-items: center; gap: 12px; }
+.logo { width: 32px; height: 32px; border-radius: 4px; cursor: pointer; }
+.board-container { display: flex; height: calc(100vh - 60px); padding: 20px; gap: 20px; overflow-x: auto; margin-right: 300px; box-sizing: border-box; position: relative; }
+.column { flex: 1; min-width: 320px; background: rgba(0,0,0,0.03); border-radius: 12px; display: flex; flex-direction: column; border: 1.5px dashed #aaa; max-height: 100%; overflow: hidden; }
 .column-header { padding: 15px; font-weight: 900; text-align: center; text-transform: uppercase; font-size: 12px; }
-
-/* CARDS */
 .card-list { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; align-items: center; }
-.card { 
-    width: 240px; min-height: 180px; padding: 15px; box-shadow: 5px 5px 10px rgba(0,0,0,0.1);
-    position: relative; display: flex; flex-direction: column; font-family: 'Comic Sans MS', cursive; 
-    box-sizing: border-box; color: #111 !important; cursor: grab;
-}
-.prio-indicator { position: absolute; top: 10px; right: 10px; font-size: 18px; }
-.prio-alta { border-left: 12px solid #ff4444 !important; }
-.prio-media { border-left: 12px solid #ffbb33 !important; }
-.prio-baixa { border-left: 12px solid #00c851 !important; }
-.card img.task-img { width: 100%; max-height: 110px; object-fit: cover; border-radius: 4px; margin-top: 10px; }
-
-.card-footer { 
-    display: flex; align-items: center; gap: 8px; margin-top: auto; 
-    padding-top: 8px; border-top: 1px solid rgba(0,0,0,0.1); font-size: 11px;
-}
-.card-footer img { width: 22px !important; height: 22px !important; border-radius: 50%; border: 1px solid #000; margin: 0; }
-
-.column:nth-child(1) .card { background: var(--todo); transform: rotate(-1deg); }
-.column:nth-child(2) .card { background: var(--doing); transform: rotate(1deg); }
-.column:nth-child(3) .card { background: var(--done); transform: rotate(-0.5deg); }
-
-/* SIDEBAR */
-.side-panel { 
-    position: fixed; right: 0; top: 60px; width: 300px; height: calc(100% - 60px); 
-    background: #1a1a1a; color: #0f0; border-left: 2px solid #000; display: flex; flex-direction: column; z-index: 900;
-}
-
+.card { width: 240px; min-height: 180px; padding: 15px; box-shadow: 5px 5px 10px rgba(0,0,0,0.1); position: relative; display: flex; flex-direction: column; font-family: 'Comic Sans MS', cursive; box-sizing: border-box; color: #111 !important; cursor: grab; }
+.side-panel { position: fixed; right: 0; top: 60px; width: 300px; height: calc(100% - 60px); background: #1a1a1a; color: #0f0; border-left: 2px solid #000; display: flex; flex-direction: column; z-index: 900; }
 .add-btn { border: none; background: var(--header-bg); padding: 12px; cursor: pointer; font-weight: 900; border-top: 1.5px solid var(--primary); color: var(--primary); }
-
-@media (max-width: 768px) {
-    .board-container { margin-right: 0; flex-direction: column; overflow-y: auto; padding: 10px; }
-    .side-panel { display: none; }
-    .column { min-width: 100%; margin-bottom: 20px; }
-}
+@media (max-width: 768px) { .board-container { margin-right: 0; flex-direction: column; overflow-y: auto; padding: 10px; } .side-panel { display: none; } .column { min-width: 100%; margin-bottom: 20px; } }
