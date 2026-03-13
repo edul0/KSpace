@@ -6,6 +6,7 @@ let GITHUB_USER = localStorage.getItem('kanban_user') || 'edul0';
 let currentUser = { login: GITHUB_USER, avatar: 'https://cdn-icons-png.flaticon.com/512/25/25231.png', name: GITHUB_USER };
 let boardState = [];
 let activityLogs = [];
+let filterOnlyMe = false;
 
 const playSound = (id) => { const a = document.getElementById(id); if(a) { a.currentTime = 0; a.play(); } };
 
@@ -29,6 +30,12 @@ async function fetchUserProfile(username) {
         if(data.login) currentUser = { login: data.login, avatar: data.avatar_url, name: data.name || data.login };
     } catch(e) { console.warn("Fallback Ativado"); }
     document.getElementById('user-profile').innerHTML = `<img src="${currentUser.avatar}"> <span>${currentUser.name}</span>`;
+}
+
+function toggleMyTasks() {
+    filterOnlyMe = !filterOnlyMe;
+    document.querySelector('.btn-filter-me').classList.toggle('active');
+    renderBoard();
 }
 
 function updateStats() {
@@ -60,7 +67,11 @@ function renderBoard() {
     const today = new Date().toISOString().split('T')[0];
 
     board.innerHTML = boardState.map(col => {
-        const filtered = col.cards.filter(c => c.content.toLowerCase().includes(search) || c.owner.toLowerCase().includes(search));
+        let filtered = col.cards.filter(c => c.content.toLowerCase().includes(search) || c.owner.toLowerCase().includes(search));
+        if (filterOnlyMe) {
+            filtered = filtered.filter(c => c.owner === currentUser.login);
+        }
+
         return `
         <div class="column">
             <div class="column-header">${col.title}</div>
@@ -75,7 +86,7 @@ function renderBoard() {
                         </div>
                         <div class="card-footer">
                             <span class="${card.deadline < today && col.id !== 'done' ? 'deadline-alert' : ''}">⏰ ${card.deadline}</span>
-                            <div class="owner-info" onclick="assignTask('${card.id}')" title="Clique para atribuir dono">
+                            <div class="owner-info" onclick="assignTask('${card.id}')">
                                 <img src="${card.ownerAvatar}">
                                 <span>@${card.owner}</span>
                             </div>
@@ -87,35 +98,18 @@ function renderBoard() {
     }).join('');
 }
 
-// NOVA FUNÇÃO DE ATRIBUIÇÃO FLEXÍVEL
 async function assignTask(cardId) {
-    const choice = prompt("Atribuir esta tarefa:\n1 - Para mim\n2 - Para outro usuário (digite o nick)");
-    
-    if (choice === "1") {
-        boardState.forEach(col => {
-            const card = col.cards.find(c => c.id === cardId);
-            if(card) {
-                card.owner = currentUser.login;
-                card.ownerAvatar = currentUser.avatar;
-            }
-        });
-        playSound('audio-click');
-        renderBoard(); await save(`@${currentUser.login} assumiu uma tarefa`);
-    } else if (choice && choice !== "1") {
-        const targetNick = choice === "2" ? prompt("Digite o nick do GitHub do responsável:") : choice;
-        if (targetNick) {
-            boardState.forEach(col => {
-                const card = col.cards.find(c => c.id === cardId);
-                if(card) {
-                    card.owner = targetNick;
-                    // Tenta buscar o avatar do novo dono
-                    card.ownerAvatar = `https://github.com/${targetNick}.png`;
-                }
-            });
-            playSound('audio-click');
-            renderBoard(); await save(`@${currentUser.login} delegou tarefa para @${targetNick}`);
+    const choice = prompt("Atribuir:\n1 - Mim\n2 - Outro (digite o @nick)");
+    if(!choice) return;
+    const target = choice === "1" ? currentUser.login : choice;
+    boardState.forEach(col => {
+        const c = col.cards.find(x => x.id === cardId);
+        if(c) { 
+            c.owner = target; 
+            c.ownerAvatar = `https://github.com/${target}.png`; 
         }
-    }
+    });
+    playSound('audio-click'); renderBoard(); await save(`@${currentUser.login} delegou para @${target}`);
 }
 
 async function addCheckItem(cardId) {
@@ -137,7 +131,7 @@ async function drop(e, colId) {
 }
 function toggleDarkMode() { document.body.classList.toggle('dark-mode'); }
 function changeUser() { const u = prompt("GitHub User:"); if(u) { localStorage.setItem('kanban_user', u); location.reload(); } }
-function shareBoard() { navigator.clipboard.writeText(window.location.href); alert("Mural copiado!"); }
+function shareBoard() { navigator.clipboard.writeText(window.location.href); alert("Copiado!"); }
 function clearLogs() { if(confirm("Limpar?")) { activityLogs = []; renderLogs(); save(); } }
 
 document.addEventListener('DOMContentLoaded', () => { fetchUserProfile(GITHUB_USER); initRealtime(); });
