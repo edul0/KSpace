@@ -29,7 +29,7 @@ function renderLanding() {
         <div class="landing-page">
             <div class="logo-container">
                 <img src="marca.png" class="logo-img">
-                <h1>KSpace /</h1>
+                <h1>KSpace</h1>
             </div>
             <input type="text" id="room-input" placeholder="nome-da-sala" autofocus>
             <p>Sua produtividade em um novo patamar.</p>
