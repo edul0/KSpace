@@ -1,4 +1,4 @@
-// === CONFIGURAÇÕES DO SUPABASE ===
+// === CONFIGURAÇÕES ===
 const SUPABASE_URL = 'https://tuansquxjvbalzxnfglz.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR1YW5zcXV4anZiYWx6eG5mZ2x6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzOTIzNTYsImV4cCI6MjA4ODk2ODM1Nn0.C8FaFGWv0VyOew47NfYXfAl-ksx9TFlI6mkPWcV9diM'; 
 const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -11,27 +11,20 @@ let boardState = [
     { id: "done", title: "Concluído", cards: [] }
 ];
 
-// === SINCRONIZAÇÃO E REALTIME ===
+// === SINCRONIZAÇÃO ===
 async function initRealtime() {
-    console.log("Iniciando conexão Realtime...");
-
-    // Busca inicial do banco
     const { data, error } = await _supabase
         .from('kanban_data')
         .select('state')
         .eq('id', 1);
 
-    if (error) {
-        console.error("Erro Supabase:", error.message);
-    } else if (data && data.length > 0) {
+    if (data && data.length > 0) {
         updateBoardState(data[0].state);
     }
 
-    // Ouvinte em tempo real para mudanças externas
     _supabase
         .channel('kanban-realtime')
         .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'kanban_data' }, payload => {
-            console.log("Mudança externa detectada!");
             if (payload.new && payload.new.state) {
                 updateBoardState(payload.new.state);
             }
@@ -46,21 +39,14 @@ function updateBoardState(newState) {
             boardState = parsed;
             renderBoard();
         }
-    } catch (e) {
-        console.error("Erro ao processar dados:", e);
-    }
+    } catch (e) { console.error("Erro no Parse:", e); }
 }
 
 async function save() {
-    const { error } = await _supabase
-        .from('kanban_data')
-        .update({ state: boardState })
-        .eq('id', 1);
-    
-    if (error) console.error("Erro ao salvar:", error.message);
+    await _supabase.from('kanban_data').update({ state: boardState }).eq('id', 1);
 }
 
-// === GESTÃO DE USUÁRIO ===
+// === USUÁRIO ===
 async function fetchUserProfile(username) {
     try {
         const res = await fetch(`https://api.github.com/users/${username}`);
@@ -68,30 +54,26 @@ async function fetchUserProfile(username) {
         const data = await res.json();
         currentUserAvatar = data.avatar_url;
         document.getElementById('user-profile').innerHTML = `
-            <img src="${currentUserAvatar}" alt="Avatar">
+            <img src="${currentUserAvatar}">
             <span>${data.name || data.login} | Workspace</span>
         `;
     } catch(e) {
         currentUserAvatar = 'https://cdn-icons-png.flaticon.com/512/25/25231.png';
         document.getElementById('user-profile').innerHTML = `
-            <img src="${currentUserAvatar}" style="opacity:0.6">
-            <span>Eduardo (Local) | Workspace</span>
+            <img src="${currentUserAvatar}" style="opacity:0.5">
+            <span>Eduardo (Modo Local)</span>
         `;
     }
 }
 
 function changeUser() {
-    const user = prompt("Digite seu @ do GitHub:");
-    if (user) {
-        localStorage.setItem('kanban_user', user);
-        location.reload();
-    }
+    const user = prompt("GitHub username:");
+    if (user) { localStorage.setItem('kanban_user', user); location.reload(); }
 }
 
 function shareBoard() {
-    navigator.clipboard.writeText(window.location.href).then(() => {
-        alert("Link copiado! Qualquer um com este link verá as mudanças em tempo real.");
-    });
+    navigator.clipboard.writeText(window.location.href);
+    alert("Link copiado!");
 }
 
 // === LÓGICA DO QUADRO ===
@@ -111,7 +93,6 @@ async function moveCard(cardId, targetColId) {
         const idx = col.cards.findIndex(c => c.id === cardId);
         if (idx !== -1) card = col.cards.splice(idx, 1)[0];
     });
-
     const dest = boardState.find(c => c.id === targetColId);
     if (dest && card) {
         dest.cards.push(card);
@@ -121,21 +102,29 @@ async function moveCard(cardId, targetColId) {
 }
 
 async function addCard(colId) {
-    const val = prompt("O que precisa ser feito?");
-    if (!val) return;
+    const content = prompt("Tarefa:");
+    if (!content) return;
+
+    const prioInput = prompt("Prioridade:\n1 - Alta\n2 - Média\n3 - Baixa");
+    const priorities = {
+        "1": { label: "Alta", class: "prio-alta" },
+        "2": { label: "Média", class: "prio-media" },
+        "3": { label: "Baixa", class: "prio-baixa" }
+    };
+    const selectedPrio = priorities[prioInput] || priorities["3"];
 
     boardState.find(c => c.id === colId).cards.push({
         id: crypto.randomUUID(),
-        content: val,
+        content: content,
+        priority: selectedPrio,
         authorAvatar: currentUserAvatar
     });
-
     renderBoard();
     await save();
 }
 
 async function deleteCard(cardId) {
-    if (confirm("Apagar esta tarefa?")) {
+    if (confirm("Excluir?")) {
         boardState.forEach(col => {
             col.cards = col.cards.filter(c => c.id !== cardId);
         });
@@ -146,8 +135,7 @@ async function deleteCard(cardId) {
 
 function renderBoard() {
     const board = document.getElementById('kanban-board');
-    if (!board || !Array.isArray(boardState)) return;
-    
+    if (!board) return;
     board.innerHTML = boardState.map(col => `
         <div class="column">
             <div class="column-header">
@@ -157,10 +145,9 @@ function renderBoard() {
             <div class="card-list" id="${col.id}" ondragover="handleDragOver(event)" ondrop="handleDrop(event)">
                 ${col.cards.map(card => `
                     <div class="card" id="${card.id}" draggable="true" ondragstart="handleDragStart(event)" ondblclick="deleteCard('${card.id}')">
-                        <div style="font-size: 14px; margin-bottom: 10px;">${card.content}</div>
-                        <div class="card-footer">
-                            <img src="${card.authorAvatar}" class="card-avatar">
-                        </div>
+                        <span class="priority-tag ${card.priority?.class || 'prio-baixa'}">${card.priority?.label || 'BAIXA'}</span>
+                        <div style="font-size: 14px; margin-bottom: 10px; font-weight: 500;">${card.content}</div>
+                        <div class="card-footer"><img src="${card.authorAvatar}" class="card-avatar"></div>
                     </div>
                 `).join('')}
             </div>
@@ -169,7 +156,6 @@ function renderBoard() {
     `).join('');
 }
 
-// === START ===
 document.addEventListener('DOMContentLoaded', () => {
     fetchUserProfile(GITHUB_USER);
     initRealtime();
