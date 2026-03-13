@@ -43,4 +43,51 @@ header {
 
 /* BOARD */
 .board-container { 
-    display: flex; height: calc(100vh - 65px); padding:
+    display: flex; height: calc(100vh - 65px); padding: 25px; gap: 25px; 
+    overflow-x: auto; margin-right: 300px; box-sizing: border-box;
+}
+
+.column { 
+    flex: 1; min-width: 330px; background: rgba(0,0,0,0.03); border-radius: 15px; 
+    display: flex; flex-direction: column; border: 2px dashed #bbb; max-height: 100%; overflow: hidden;
+}
+.column-header { padding: 18px; font-weight: 900; text-align: center; text-transform: uppercase; font-size: 13px; letter-spacing: 1px; }
+
+/* CARDS POST-IT */
+.card-list { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; align-items: center; }
+
+.card { 
+    width: 250px; min-height: 190px; padding: 18px; box-shadow: 6px 6px 0px rgba(0,0,0,0.1);
+    position: relative; display: flex; flex-direction: column; font-family: 'Comic Sans MS', cursive; 
+    box-sizing: border-box; overflow: hidden; color: #111 !important; border-radius: 4px; cursor: grab;
+}
+
+.prio-indicator { position: absolute; top: 12px; right: 12px; font-size: 22px; }
+.prio-alta { border-left: 12px solid #ff4444 !important; }
+.prio-media { border-left: 12px solid #ffbb33 !important; }
+.prio-baixa { border-left: 12px solid #00c851 !important; }
+
+.card img.task-img { width: 100%; max-height: 120px; object-fit: cover; border-radius: 4px; margin-top: 10px; border: 1px solid rgba(0,0,0,0.1); }
+
+.card-footer { display: flex; align-items: center; gap: 8px; margin-top: auto; padding-top: 10px; border-top: 1px solid rgba(0,0,0,0.1); font-size: 11px; font-weight: 900; }
+.card-footer img { width: 22px; height: 22px; border-radius: 50%; border: 1px solid #000; }
+
+.column:nth-child(1) .card { background: var(--todo); transform: rotate(-1.5deg); }
+.column:nth-child(2) .card { background: var(--doing); transform: rotate(1.2deg); }
+.column:nth-child(3) .card { background: var(--done); transform: rotate(-1deg); }
+
+/* SIDE PANELS */
+.side-panel { 
+    position: fixed; right: 0; top: 65px; width: 300px; height: calc(100% - 65px); 
+    background: #1a1a1a; color: #0f0; border-left: 2px solid #000; 
+    display: flex; flex-direction: column; z-index: 900; transition: 0.3s; transform: translateX(100%);
+}
+.side-panel.active { transform: translateX(0); }
+.panel-header { padding: 15px; background: #333; font-weight: bold; font-size: 11px; display: flex; justify-content: space-between; align-items: center; }
+
+.add-btn { border: none; background: var(--header-bg); padding: 15px; cursor: pointer; font-weight: 900; border-top: 2px solid var(--primary); color: var(--primary); }
+
+@media (max-width: 768px) {
+    .board-container { margin-right: 0; flex-direction: column; overflow-y: auto; }
+    .side-panel { width: 100%; }
+}
