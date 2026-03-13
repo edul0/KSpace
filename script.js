@@ -4,7 +4,11 @@ const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const urlParams = new URLSearchParams(window.location.search);
 let ROOM = urlParams.get('sala');
-let user = { name: 'Eduardo', avatar: 'https://github.com/edul0.png' };
+// Puxa o Eduardo ou quem estiver logado
+let user = { 
+    name: localStorage.getItem('kanban_custom_name') || 'Eduardo', 
+    avatar: localStorage.getItem('kanban_custom_avatar') || 'https://github.com/edul0.png' 
+};
 
 let state = [];
 let logs = [];
@@ -19,7 +23,7 @@ function renderLanding() {
     document.getElementById('app-container').innerHTML = `
         <div style="height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; font-family:monospace;">
             <img src="marca.png" width="100">
-            <h1 style="font-size:3.5rem; margin:15px 0;">KSpace /</h1>
+            <h1>KSpace /</h1>
             <input type="text" id="sala-in" placeholder="nome-da-sala" style="font-size:1.8rem; text-align:center; border:none; border-bottom:4px solid #000; outline:none; width:280px;">
         </div>`;
     document.getElementById('sala-in').onkeypress = (e) => { if(e.key==='Enter') window.location.href=`?sala=${e.target.value}`; };
@@ -33,14 +37,14 @@ function renderSkeleton() {
                 <img src="${user.avatar}" style="width:28px; border-radius:50%; border:1px solid #000;">
                 <b style="font-size:13px;">${ROOM}</b>
             </div>
-            <div style="display:flex; gap:10px; align-items:center;">
-                <button class="theme-btn" onclick="toggleTheme()">🌓</button>
-                <button onclick="share()" style="background:#000; color:#fff; border:none; padding:8px 15px; border-radius:4px; font-weight:bold; cursor:pointer; font-size:12px;">🔗 LINK</button>
+            <div style="display:flex; gap:10px;">
+                <button onclick="toggleDark()" style="background:none; border:none; cursor:pointer;">🌓</button>
+                <button onclick="share()" style="background:#000; color:#fff; border:none; padding:8px 15px; border-radius:4px; font-weight:bold; cursor:pointer; font-size:11px;">LINK</button>
             </div>
         </header>
         <main id="board" class="board-container"></main>
         <div class="side-panel">
-            <div class="panel-header">HISTÓRICO <span>•</span></div>
+            <div style="padding:10px; background:#333; font-size:11px;">HISTÓRICO</div>
             <div id="log-content"></div>
         </div>`;
 }
@@ -66,11 +70,14 @@ function renderBoard() {
             <div class="column-header">${col.title} (${col.cards.length})</div>
             <div class="card-list">
                 ${col.cards.map(c => `
-                    <div class="card" id="${c.id}" ondblclick="delCard('${c.id}')">
-                        <div class="card-author">BY: ${c.author || 'ANÔNIMO'}</div>
+                    <div class="card ${c.prio || 'prio-media'}" id="${c.id}" ondblclick="delCard('${c.id}')">
                         <div style="font-weight:bold; flex:1; font-size:14px;">${c.content}</div>
                         ${c.img ? `<img src="${c.img}">` : ''}
                         <div style="font-size:9px; color:#666; margin-top:10px; cursor:pointer; text-align:right;" onclick="addImg('${c.id}')">🖼️ IMAGEM</div>
+                        <div class="card-footer" onclick="assign('${c.id}')" style="cursor:pointer;">
+                            <img src="${c.ownerAvatar || 'https://github.com/identicons/ghost.png'}">
+                            <span>@${c.owner || 'atribuir'}</span>
+                        </div>
                     </div>`).join('')}
             </div>
             <button class="add-btn" onclick="addCard('${col.id}')">+ NOVO POST-IT</button>
@@ -79,24 +86,41 @@ function renderBoard() {
 
 async function save(msg) {
     if(msg) logs.unshift({ msg, time: new Date().toLocaleTimeString() });
-    await _supabase.from('kanban_data').update({ state, logs: logs.slice(0,20) }).eq('room_name', ROOM);
+    await _supabase.from('kanban_data').update({ state, logs: logs.slice(0,15) }).eq('room_name', ROOM);
 }
 
 async function addCard(cid) {
-    const t = prompt("O que precisa ser feito?"); if(!t) return;
-    state.find(x => x.id === cid).cards.push({ id: crypto.randomUUID(), content: t, author: user.name });
-    renderBoard(); await save(`@${user.name} adicionou: ${t}`);
+    const t = prompt("Tarefa:"); if(!t) return;
+    const p = prompt("Prioridade: 1-Alta, 2-Média, 3-Baixa", "2");
+    const prioClass = p === "1" ? "prio-alta" : (p === "3" ? "prio-baixa" : "prio-media");
+    state.find(x => x.id === cid).cards.push({ 
+        id: crypto.randomUUID(), 
+        content: t, 
+        prio: prioClass,
+        owner: user.name,
+        ownerAvatar: user.avatar 
+    });
+    renderBoard(); await save(`@${user.name} criou: ${t}`);
+}
+
+async function assign(id) {
+    const n = prompt("Delegar para (User GitHub):"); if(!n) return;
+    state.forEach(col => {
+        const c = col.cards.find(x => x.id === id);
+        if(c) { c.owner = n; c.ownerAvatar = `https://github.com/${n}.png`; }
+    });
+    renderBoard(); await save(`Tarefa delegada para @${n}`);
 }
 
 async function addImg(id) {
-    const u = prompt("URL da imagem:"); if(!u) return;
+    const u = prompt("Link imagem:"); if(!u) return;
     state.forEach(col => { const c = col.cards.find(x => x.id === id); if(c) c.img = u; });
-    renderBoard(); await save(`@${user.name} anexou imagem`);
+    renderBoard(); await save(`Imagem anexada`);
 }
 
-async function delCard(id) { if(confirm("Apagar post-it?")) { state.forEach(col => col.cards = col.cards.filter(x => x.id !== id)); renderBoard(); await save(`Card removido`); } }
-function toggleTheme() { document.body.classList.toggle('dark-mode'); }
+async function delCard(id) { if(confirm("Apagar?")) { state.forEach(col => col.cards = col.cards.filter(x => x.id !== id)); renderBoard(); await save(`Removido`); } }
+function toggleDark() { document.body.classList.toggle('dark-mode'); }
 function renderLogs() { document.getElementById('log-content').innerHTML = logs.map(l => `<div style="margin-bottom:8px; border-left:2px solid #0f0; padding-left:8px;">[${l.time}] ${l.msg}</div>`).join(''); }
-function share() { navigator.clipboard.writeText(window.location.href); alert("Link da sala copiado!"); }
+function share() { navigator.clipboard.writeText(window.location.href); alert("Copiado!"); }
 
-if (document.readyState === 'complete') start(); else document.addEventListener('DOMContentLoaded', start);
+start();
