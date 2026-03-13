@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KanbanSpace| Private Rooms</title>
+    <title> KanbanSpace | PrivateRooms</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="style.css">
     <script src="script.js" defer></script>
@@ -12,34 +12,39 @@
     <audio id="audio-click" src="https://www.soundjay.com/buttons/button-45.mp3"></audio>
     <audio id="audio-paper" src="https://www.soundjay.com/office/paper-flick-1.mp3"></audio>
 
-    <header>
-        <div class="header-left">
-            <div class="user-profile" id="user-profile" onclick="toggleDarkMode()">
-                <span>Carregando...</span>
+    <div id="app-content">
+        <header>
+            <div class="header-left">
+                <div class="user-profile" id="user-profile" onclick="toggleDarkMode()">
+                    <span>Carregando...</span>
+                </div>
+                <div class="room-info" onclick="changeRoom()">
+                    Mural: <strong id="room-display">...</strong> <span id="lock-status">🔓</span>
+                </div>
+                <div class="search-container">
+                    <input type="text" id="board-search" placeholder="Buscar..." oninput="renderBoard()">
+                    <button class="btn-filter-me" onclick="toggleMyTasks()">Meus</button>
+                </div>
             </div>
-            <div class="room-info" onclick="changeRoom()">
-                Mural: <strong id="room-display">...</strong> <span id="lock-status">🔓</span>
+            <div class="actions">
+                <button class="btn-share" onclick="shareBoard()">Link</button>
+                <button class="btn-user-change" onclick="changeUser()">User</button>
             </div>
-            <div class="search-container">
-                <input type="text" id="board-search" placeholder="Buscar..." oninput="renderBoard()">
-                <button class="btn-filter-me" onclick="toggleMyTasks()">Meus</button>
-            </div>
-        </div>
-        <div class="actions">
-            <button class="btn-share" onclick="shareBoard()">Copiar Link</button>
-            <button class="btn-user-change" onclick="changeUser()">Trocar User</button>
-        </div>
-    </header>
+        </header>
 
-    <main id="kanban-board" class="board-container"></main>
+        <main id="kanban-board" class="board-container"></main>
 
-    <div id="log-panel" class="log-panel">
-        <div class="stats-panel">
-            <div class="log-header">Status</div>
-            <div id="stats-content" style="padding: 10px; font-size: 12px; font-weight: bold;"></div>
+        <div id="log-panel" class="log-panel">
+            <div class="stats-panel">
+                <div class="log-header">Mural Status</div>
+                <div id="stats-content" style="padding: 10px; font-size: 12px;">0% concluído</div>
+            </div>
+            <div class="log-header">
+                Histórico
+                <button class="clear-logs-btn" onclick="clearLogs()">🗑️</button>
+            </div>
+            <div id="log-content" class="log-content"></div>
         </div>
-        <div class="log-header">Histórico <button class="clear-logs-btn" onclick="clearLogs()">🗑️</button></div>
-        <div id="log-content" class="log-content"></div>
     </div>
 </body>
 </html>
