@@ -10,8 +10,9 @@ let boardState = [];
 let activityLogs = [];
 
 async function startApp() {
-    if (!ROOM_NAME) { renderLanding(); } 
-    else {
+    if (!ROOM_NAME) { 
+        renderLanding(); 
+    } else {
         await fetchUserProfile(GITHUB_USER);
         renderMuralSkeleton();
         initRoom();
@@ -19,12 +20,14 @@ async function startApp() {
 }
 
 function renderLanding() {
-    document.body.innerHTML = `
+    document.getElementById('app-container').innerHTML = `
         <div class="landing-page">
             <h1>KanbanSpace</h1>
             <input type="text" id="room-input" placeholder="nome-da-sala" autofocus>
+            <p>Crie ou acesse murais instantâneos compartilháveis.</p>
         </div>`;
-    document.getElementById('room-input').addEventListener('keypress', (e) => {
+    const input = document.getElementById('room-input');
+    input.addEventListener('keypress', (e) => {
         if (e.key === 'Enter' && e.target.value) window.location.href = `?sala=${e.target.value.trim()}`;
     });
 }
@@ -77,10 +80,10 @@ function renderBoard() {
                     <div class="card ${card.priorityClass || 'prio-media'}" id="${card.id}" draggable="true" ondragstart="drag(event)" ondblclick="deleteCard('${card.id}')">
                         <div class="card-content">${card.content}</div>
                         ${card.imageUrl ? `<img src="${card.imageUrl}" class="attached-image">` : ''}
-                        <div style="font-size:9px; color:var(--primary); margin-top:10px; cursor:pointer; opacity:0.5" onclick="attachImage('${card.id}')">🖼️ Anexar Imagem</div>
+                        <div style="font-size:9px; color:#999; margin-top:10px; cursor:pointer;" onclick="attachImage('${card.id}')">🖼️ Anexar Imagem</div>
                         <div class="card-footer">
                             <div class="owner-info" onclick="assignTask('${card.id}')">
-                                <img src="${card.ownerAvatar || 'https://github.com/' + (card.owner || 'ghost') + '.png'}" onerror="this.src='https://github.com/identicons/ghost.png'">
+                                <img src="${card.ownerAvatar || 'https://github.com/identicons/ghost.png'}">
                                 <span>@${card.owner || currentUser.login}</span>
                             </div>
                         </div>
@@ -91,25 +94,22 @@ function renderBoard() {
 }
 
 async function addCard(colId) {
-    const txt = prompt("Tarefa:"); if (!txt) return;
+    const txt = prompt("Texto:"); if (!txt) return;
     const p = prompt("Prioridade: 1-Alta, 2-Média, 3-Baixa", "2");
     const prio = p === "1" ? "prio-alta" : (p === "3" ? "prio-baixa" : "prio-media");
-    
-    boardState.find(c => c.id === colId).cards.push({ 
-        id: crypto.randomUUID(), content: txt, owner: currentUser.login, 
-        ownerAvatar: currentUser.avatar, priorityClass: prio, imageUrl: null 
-    });
+    boardState.find(c => c.id === colId).cards.push({ id: crypto.randomUUID(), content: txt, owner: currentUser.login, ownerAvatar: currentUser.avatar, priorityClass: prio, imageUrl: null });
     renderBoard(); await save(`@${currentUser.login} criou card`);
 }
 
 async function attachImage(cardId) {
-    const url = prompt("URL da Imagem:"); if (!url) return;
+    const url = prompt("Cole a URL da imagem:"); if (!url) return;
     boardState.forEach(col => { const c = col.cards.find(x => x.id === cardId); if (c) c.imageUrl = url; });
     renderBoard(); await save(`@${currentUser.login} anexou imagem`);
 }
 
 async function save(logMsg) {
     if (logMsg) activityLogs.unshift({ msg: logMsg, time: new Date().toLocaleTimeString() });
+    if (activityLogs.length > 25) activityLogs.pop();
     await _supabase.from('kanban_data').update({ state: boardState, logs: activityLogs }).eq('room_name', ROOM_NAME);
 }
 
@@ -122,9 +122,9 @@ function renderLogs() {
     if(st) st.innerText = `${tot > 0 ? Math.round((ok/tot)*100) : 0}%`;
 }
 
+function shareBoard() { navigator.clipboard.writeText(window.location.href); alert("Link copiado!"); }
 async function fetchUserProfile(u) { try { const r = await fetch(`https://api.github.com/users/${u}`); const d = await r.json(); if(d.login) currentUser = { login: d.login, avatar: d.avatar_url }; } catch(e) {} }
 function changeUser() { const u = prompt("GitHub User:"); if(u) { localStorage.setItem('kanban_user', u); location.reload(); } }
-function shareBoard() { navigator.clipboard.writeText(window.location.href); alert("Link copiado!"); }
 async function deleteCard(id) { if(confirm("Deletar?")) { boardState.forEach(c => c.cards = c.cards.filter(x => x.id !== id)); renderBoard(); await save(`Removido`); } }
 function drag(e) { e.dataTransfer.setData("text", e.target.id); }
 async function drop(e, colId) {
