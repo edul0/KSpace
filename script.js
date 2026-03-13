@@ -1,14 +1,19 @@
-// Garanta que o estado inicial está lá em cima (boardState...)
+// === 1. ESTADO ===
+const generateId = () => crypto.randomUUID();
 
+let boardState = [
+    { id: "todo", title: "A Fazer", cards: [{ id: generateId(), content: "Configurar o projeto" }, { id: generateId(), content: "Estudar Drag and Drop" }] },
+    { id: "doing", title: "Em Andamento", cards: [] },
+    { id: "done", title: "Concluído", cards: [] }
+];
+
+// === 2. LÓGICA DE MOVIMENTO ===
 function handleDragStart(event) {
     event.dataTransfer.setData("text/plain", event.target.id);
-    // Adiciona uma leve transparência ao arrastar
-    setTimeout(() => event.target.style.display = "none", 0);
 }
 
-// Essa função é CRUCIAL: sem o preventDefault, o "drop" não funciona
 function handleDragOver(event) {
-    event.preventDefault();
+    event.preventDefault(); // Necessário para permitir o drop
 }
 
 function handleDrop(event) {
@@ -23,8 +28,6 @@ function handleDrop(event) {
 
 function moveCard(cardId, targetColumnId) {
     let movedCard = null;
-
-    // Acha e remove o card
     boardState.forEach(col => {
         const index = col.cards.findIndex(c => c.id === cardId);
         if (index !== -1) {
@@ -32,26 +35,28 @@ function moveCard(cardId, targetColumnId) {
         }
     });
 
-    // Adiciona na nova coluna
     const colDestino = boardState.find(col => col.id === targetColumnId);
     if (colDestino && movedCard) {
         colDestino.cards.push(movedCard);
     }
-
     renderBoard();
 }
 
+// === 3. RENDERIZAÇÃO ===
 function renderBoard() {
+    console.log("Renderizando quadro...");
     const board = document.getElementById('kanban-board');
+    if (!board) {
+        console.error("ERRO: Elemento kanban-board não encontrado no HTML!");
+        return;
+    }
+
     board.innerHTML = boardState.map(col => `
         <div class="column">
             <h3>${col.title}</h3>
-            <div class="card-list" id="${col.id}" 
-                 ondragover="handleDragOver(event)" 
-                 ondrop="handleDrop(event)">
+            <div class="card-list" id="${col.id}" ondragover="handleDragOver(event)" ondrop="handleDrop(event)">
                 ${col.cards.map(card => `
-                    <div class="card" id="${card.id}" draggable="true" 
-                         ondragstart="handleDragStart(event)">
+                    <div class="card" id="${card.id}" draggable="true" ondragstart="handleDragStart(event)">
                         ${card.content}
                     </div>
                 `).join('')}
@@ -60,4 +65,5 @@ function renderBoard() {
     `).join('');
 }
 
+// Inicializa
 window.onload = renderBoard;
