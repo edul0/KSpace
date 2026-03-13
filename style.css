@@ -19,6 +19,10 @@ header {
 .header-left { display: flex; align-items: center; gap: 12px; }
 .logo { width: 32px; height: 32px; border-radius: 4px; cursor: pointer; }
 
+/* INDICADOR ONLINE */
+#online-status { width: 10px; height: 10px; background: #999; border-radius: 50%; display: inline-block; transition: 0.3s; }
+#online-status.live { background: #00ff00; box-shadow: 0 0 8px #00ff00; }
+
 /* BOARD CONTAINER */
 .board-container { 
     display: flex; height: calc(100vh - 60px); padding: 20px; gap: 20px; 
@@ -40,18 +44,15 @@ header {
 
 /* CARDS */
 .card-list { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; align-items: center; }
-
 .card { 
     width: 240px; min-height: 180px; padding: 15px; box-shadow: 5px 5px 10px rgba(0,0,0,0.1);
     position: relative; display: flex; flex-direction: column; font-family: 'Comic Sans MS', cursive; 
     box-sizing: border-box; color: #111 !important; cursor: grab;
 }
-
 .prio-indicator { position: absolute; top: 10px; right: 10px; font-size: 18px; }
 .prio-alta { border-left: 12px solid #ff4444 !important; }
 .prio-media { border-left: 12px solid #ffbb33 !important; }
 .prio-baixa { border-left: 12px solid #00c851 !important; }
-
 .card img.task-img { width: 100%; max-height: 110px; object-fit: cover; border-radius: 4px; margin-top: 10px; }
 
 .card-footer { 
