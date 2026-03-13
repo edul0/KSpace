@@ -10,26 +10,26 @@ body.dark-mode {
 
 body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--primary); overflow: hidden; height: 100vh; }
 
-/* HEADER ALINHADO */
+/* HEADER FIXO E PROPORCIONAL */
 header { 
     display: flex; justify-content: space-between; align-items: center; 
-    padding: 0 20px; background: var(--header-bg); border-bottom: 2px solid var(--primary); 
+    padding: 0 15px; background: var(--header-bg); border-bottom: 2px solid var(--primary); 
     height: 60px; box-sizing: border-box; z-index: 1000; position: relative;
 }
 .header-left { display: flex; align-items: center; gap: 12px; }
 .logo { width: 32px; height: 32px; border-radius: 4px; cursor: pointer; }
 
-/* BOARD CONTAINER COM MARCA D'ÁGUA DISCRETA */
+/* BOARD CONTAINER COM MARCA D'ÁGUA */
 .board-container { 
     display: flex; height: calc(100vh - 60px); padding: 20px; gap: 20px; 
     overflow-x: auto; margin-right: 300px; box-sizing: border-box; 
     position: relative;
 }
 
-/* Marca d'água em camada inferior para não bugar o clique */
+/* MARCA D'ÁGUA CENTRALIZADA NO FUNDO */
 .board-container::before {
     content: ""; position: fixed; top: 50%; left: 40%; 
-    transform: translate(-50%, -50%); width: 300px; height: 300px;
+    transform: translate(-50%, -50%); width: 250px; height: 250px;
     background-image: url('marca.png'); background-size: contain; background-repeat: no-repeat;
     opacity: 0.05; z-index: -1; pointer-events: none;
 }
@@ -39,34 +39,43 @@ header {
     flex: 1; min-width: 320px; background: rgba(0,0,0,0.03); border-radius: 12px; 
     display: flex; flex-direction: column; border: 1.5px dashed #aaa; max-height: 100%; overflow: hidden;
 }
-.column-header { padding: 15px; font-weight: 900; text-align: center; text-transform: uppercase; font-size: 13px; }
+.column-header { padding: 15px; font-weight: 900; text-align: center; text-transform: uppercase; font-size: 13px; letter-spacing: 1px; }
 
-/* CARDS */
+/* LISTA DE CARDS COM SCROLL INTERNO */
 .card-list { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; align-items: center; }
+
+/* POST-ITS (O CORAÇÃO DO DESIGN) */
 .card { 
     width: 240px; min-height: 180px; padding: 15px; box-shadow: 5px 5px 10px rgba(0,0,0,0.1);
     position: relative; display: flex; flex-direction: column; font-family: 'Comic Sans MS', cursive; 
     box-sizing: border-box; overflow: hidden; color: #111 !important; border-radius: 2px;
 }
-.card img { width: 100%; max-height: 120px; object-fit: cover; border-radius: 4px; margin-top: 10px; }
 
+/* FIX DAS IMAGENS: Agora elas aparecem e ficam contidas */
+.card img { 
+    width: 100%; max-height: 120px; object-fit: cover; border-radius: 4px; 
+    margin-top: 10px; border: 1px solid rgba(0,0,0,0.1); 
+}
+
+/* ROTAÇÕES CARACTERÍSTICAS */
 .column:nth-child(1) .card { background: var(--todo); transform: rotate(-1.5deg); }
 .column:nth-child(2) .card { background: var(--doing); transform: rotate(1.2deg); }
 .column:nth-child(3) .card { background: var(--done); transform: rotate(-1deg); }
 
-/* HISTÓRICO LATERAL FIXO */
+/* SIDE PANEL (HISTÓRICO TERMINAL) */
 .side-panel { 
     position: fixed; right: 0; top: 60px; width: 300px; height: calc(100% - 60px); 
     background: #1a1a1a; color: #0f0; border-left: 2px solid #000; display: flex; flex-direction: column; z-index: 900;
 }
-.panel-header { padding: 12px; background: #333; font-weight: bold; font-size: 11px; display: flex; justify-content: space-between; border-bottom: 1px solid #444; }
+.panel-header { padding: 12px; background: #333; font-weight: bold; font-size: 11px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #444; }
 #log-content { flex: 1; overflow-y: auto; padding: 15px; font-family: monospace; font-size: 11px; line-height: 1.5; }
 
 .add-btn { border: none; background: var(--header-bg); padding: 12px; cursor: pointer; font-weight: 900; border-top: 1.5px solid var(--primary); color: var(--primary); }
 
+/* ESTABILIDADE MOBILE */
 @media (max-width: 768px) {
-    .board-container { margin-right: 0; flex-direction: column; overflow-y: auto; }
-    .side-panel { display: none; }
-    .column { min-width: 100%; margin-bottom: 20px; }
+    .board-container { margin-right: 0; flex-direction: column; overflow-y: auto; padding: 10px; }
+    .side-panel { display: none; } /* Oculto no mobile para estabilidade total */
+    .column { min-width: 100%; margin-bottom: 15px; }
     .board-container::before { left: 50%; width: 200px; }
 }
