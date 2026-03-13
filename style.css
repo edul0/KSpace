@@ -1,31 +1,85 @@
-/* LISTA DE USUÁRIOS ONLINE */
-.online-users { 
-    display: flex; align-items: center; gap: -5px; /* Efeito de sobreposição leve */
-    margin-right: 10px;
+:root { 
+    --primary: #000; --bg: #f4f4f4; --header-bg: #ffffff;
+    --todo: #ffff88; --doing: #7afaff; --done: #99ff99;
 }
-.online-user-dot { 
-    width: 24px; height: 24px; border-radius: 50%; 
-    border: 2px solid var(--header-bg); object-fit: cover;
-    margin-left: -8px; transition: 0.2s;
+
+body.dark-mode { 
+    --primary: #fff; --bg: #121212; --header-bg: #1e1e1e;
+    --todo: #5c5c2d; --doing: #2d5c5c; --done: #2d5c2d;
 }
-.online-user-dot:hover { transform: translateY(-3px); z-index: 10; margin-left: 0; }
 
-/* REFORÇO NO INDICADOR LIVE */
-#online-status { width: 10px; height: 10px; background: #999; border-radius: 50%; margin-right: 5px; }
-#online-status.live { background: #00ff00; box-shadow: 0 0 8px #00ff00; }
+body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--primary); overflow: hidden; height: 100vh; transition: 0.3s; }
 
-/* RESTANTE DO CSS MANTIDO (IGUAL À VERSÃO ANTERIOR) */
-:root { --primary: #000; --bg: #f4f4f4; --header-bg: #ffffff; --todo: #ffff88; --doing: #7afaff; --done: #99ff99; }
-body.dark-mode { --primary: #fff; --bg: #121212; --header-bg: #1e1e1e; --todo: #5c5c2d; --doing: #2d5c5c; --done: #2d5c2d; }
-body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--primary); overflow: hidden; height: 100vh; }
-header { display: flex; justify-content: space-between; align-items: center; padding: 0 15px; background: var(--header-bg); border-bottom: 2px solid var(--primary); height: 60px; box-sizing: border-box; z-index: 1000; position: relative; }
+/* HEADER */
+header { 
+    display: flex; justify-content: space-between; align-items: center; 
+    padding: 0 15px; background: var(--header-bg); border-bottom: 2px solid var(--primary); 
+    height: 60px; box-sizing: border-box; z-index: 1000; position: relative;
+}
 .header-left { display: flex; align-items: center; gap: 12px; }
 .logo { width: 32px; height: 32px; border-radius: 4px; cursor: pointer; }
-.board-container { display: flex; height: calc(100vh - 60px); padding: 20px; gap: 20px; overflow-x: auto; margin-right: 300px; box-sizing: border-box; position: relative; }
-.column { flex: 1; min-width: 320px; background: rgba(0,0,0,0.03); border-radius: 12px; display: flex; flex-direction: column; border: 1.5px dashed #aaa; max-height: 100%; overflow: hidden; }
-.column-header { padding: 15px; font-weight: 900; text-align: center; text-transform: uppercase; font-size: 12px; }
+
+/* INDICADOR ONLINE */
+#online-indicator { display: flex; align-items: center; gap: 5px; cursor: pointer; padding: 5px 10px; border-radius: 20px; }
+#status-dot { width: 10px; height: 10px; background: #999; border-radius: 50%; }
+#status-dot.live { background: #00ff00; box-shadow: 0 0 8px #00ff00; }
+
+/* BOARD CONTAINER */
+.board-container { 
+    display: flex; height: calc(100vh - 60px); padding: 15px; gap: 15px; 
+    overflow-x: auto; margin-right: 300px; box-sizing: border-box; position: relative;
+}
+
+.column { 
+    flex: 1; min-width: 320px; background: rgba(0,0,0,0.03); border-radius: 12px; 
+    display: flex; flex-direction: column; border: 1.5px dashed #aaa; max-height: 100%; overflow: hidden;
+}
+.column-header { padding: 12px; font-weight: 900; text-align: center; text-transform: uppercase; font-size: 13px; }
+
+/* LISTA DE CARDS */
 .card-list { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; align-items: center; }
-.card { width: 240px; min-height: 180px; padding: 15px; box-shadow: 5px 5px 10px rgba(0,0,0,0.1); position: relative; display: flex; flex-direction: column; font-family: 'Comic Sans MS', cursive; box-sizing: border-box; color: #111 !important; cursor: grab; }
-.side-panel { position: fixed; right: 0; top: 60px; width: 300px; height: calc(100% - 60px); background: #1a1a1a; color: #0f0; border-left: 2px solid #000; display: flex; flex-direction: column; z-index: 900; }
+
+/* POST-ITS (O FIX) */
+.card { 
+    width: 240px; min-height: 180px; padding: 15px; box-shadow: 5px 5px 10px rgba(0,0,0,0.1);
+    position: relative; display: flex; flex-direction: column; font-family: 'Comic Sans MS', cursive; 
+    box-sizing: border-box; overflow: hidden; color: #111 !important; border-radius: 2px; cursor: grab;
+}
+
+/* FIX IMAGEM VAZANDO */
+.card img.task-img { 
+    width: 100%; max-height: 120px; object-fit: cover; 
+    border-radius: 4px; margin-top: 10px; border: 1px solid rgba(0,0,0,0.1); 
+}
+
+.prio-indicator { position: absolute; top: 8px; right: 8px; font-size: 16px; }
+.prio-alta { border-left: 12px solid #ff4444 !important; }
+.prio-media { border-left: 12px solid #ffbb33 !important; }
+.prio-baixa { border-left: 12px solid #00c851 !important; }
+
+.card-footer { display: flex; align-items: center; gap: 6px; margin-top: auto; padding-top: 8px; border-top: 1px solid rgba(0,0,0,0.1); font-size: 10px; font-weight: bold; }
+.card-footer img { width: 20px; height: 20px; border-radius: 50%; border: 1px solid #000; }
+
+.column:nth-child(1) .card { background: var(--todo); transform: rotate(-1deg); }
+.column:nth-child(2) .card { background: var(--doing); transform: rotate(1deg); }
+.column:nth-child(3) .card { background: var(--done); transform: rotate(-0.5deg); }
+
+/* SIDE PANELS */
+.side-panel { 
+    position: fixed; right: 0; top: 60px; width: 300px; height: calc(100% - 60px); 
+    background: #1a1a1a; color: #eee; border-left: 2px solid #000; 
+    display: flex; flex-direction: column; z-index: 900; transition: 0.3s; transform: translateX(100%);
+}
+.side-panel.active { transform: translateX(0); }
+.panel-header { padding: 12px; background: #333; font-weight: bold; font-size: 11px; color: #0f0; display: flex; justify-content: space-between; align-items: center; }
+
+.user-row { display: flex; align-items: center; gap: 10px; padding: 10px 15px; border-bottom: 1px solid #222; }
+.user-row img { width: 28px; height: 28px; border-radius: 50%; }
+
 .add-btn { border: none; background: var(--header-bg); padding: 12px; cursor: pointer; font-weight: 900; border-top: 1.5px solid var(--primary); color: var(--primary); }
-@media (max-width: 768px) { .board-container { margin-right: 0; flex-direction: column; overflow-y: auto; padding: 10px; } .side-panel { display: none; } .column { min-width: 100%; margin-bottom: 20px; } }
+
+@media (max-width: 768px) {
+    .board-container { margin-right: 0; flex-direction: column; overflow-y: auto; }
+    .side-panel { width: 100%; top: 60px; height: calc(100% - 60px); }
+    .column { min-width: 100%; margin-bottom: 20px; }
+}
