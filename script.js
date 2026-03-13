@@ -3,116 +3,93 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let GITHUB_USER = localStorage.getItem('kanban_user') || 'edul0';
-let currentUserData = { login: GITHUB_USER, avatar: '' };
+let currentUser = { login: GITHUB_USER, avatar: '' };
 let boardState = [];
 
-// === INICIALIZAÇÃO ===
 async function initRealtime() {
     const { data } = await _supabase.from('kanban_data').select('state').eq('id', 1);
-    if (data?.length > 0) updateBoardState(data[0].state);
+    if (data?.length > 0) { boardState = data[0].state; renderBoard(); }
 
     _supabase.channel('kanban-realtime').on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'kanban_data' }, 
-    payload => updateBoardState(payload.new.state)).subscribe();
+    payload => { boardState = payload.new.state; renderBoard(); }).subscribe();
 }
 
-function updateBoardState(newState) {
-    boardState = typeof newState === 'string' ? JSON.parse(newState) : newState;
-    renderBoard();
-}
+async function save() { await _supabase.from('kanban_data').update({ state: boardState }).eq('id', 1); }
 
-async function save() {
-    await _supabase.from('kanban_data').update({ state: boardState }).eq('id', 1);
-}
-
-// === USUÁRIO ===
 async function fetchUserProfile(username) {
     try {
         const res = await fetch(`https://api.github.com/users/${username}`);
         const data = await res.json();
-        currentUserData = { login: data.login, avatar: data.avatar_url, name: data.name || data.login };
-        document.getElementById('user-profile').innerHTML = `<img src="${data.avatar_url}"> <span>${currentUserData.name}</span>`;
-    } catch(e) {
-        document.getElementById('user-profile').innerHTML = `<span>Modo Offline</span>`;
-    }
+        currentUser = { login: data.login, avatar: data.avatar_url, name: data.name || data.login };
+        document.getElementById('user-profile').innerHTML = `<img src="${data.avatar_url}"> <span>${currentUser.name}</span>`;
+    } catch(e) { document.getElementById('user-profile').innerHTML = `<span>@${username}</span>`; }
 }
 
-function changeUser() {
-    const u = prompt("User GitHub:");
-    if(u) { localStorage.setItem('kanban_user', u); location.reload(); }
-}
-
-// === KANBAN LÓGICA ===
 async function addCard(colId) {
-    const content = prompt("Tarefa:");
+    const content = prompt("O que precisa ser feito?");
     if (!content) return;
-    const p = prompt("Prioridade (1-Alta, 2-Média, 3-Baixa):");
-    const prios = {"1": {label:"Alta", class:"prio-alta"}, "2":{label:"Média", class:"prio-media"}, "3":{label:"Baixa", class:"prio-baixa"}};
+    const p = prompt("Prioridade: 1-Alta, 2-Média, 3-Baixa");
+    const date = prompt("Data de entrega (AAAA-MM-DD):", new Date().toISOString().split('T')[0]);
+    
+    const prios = {"1":"prio-alta", "2":"prio-media", "3":"prio-baixa"};
     
     boardState.find(c => c.id === colId).cards.push({
         id: crypto.randomUUID(),
         content: content,
-        priority: prios[p] || prios["3"],
-        creator: currentUserData.login,
-        owner: currentUserData.login, // Quem cria é o dono inicial
-        ownerAvatar: currentUserData.avatar
+        priorityClass: prios[p] || "prio-baixa",
+        deadline: date,
+        owner: currentUser.login,
+        ownerAvatar: currentUser.avatar
     });
     renderBoard(); await save();
 }
 
 async function takeTask(cardId) {
-    if(confirm("Deseja assumir esta tarefa?")) {
+    if(confirm("Assumir esta tarefa?")) {
         boardState.forEach(col => {
             const card = col.cards.find(c => c.id === cardId);
-            if(card) {
-                card.owner = currentUserData.login;
-                card.ownerAvatar = currentUserData.avatar;
-            }
+            if(card) { card.owner = currentUser.login; card.ownerAvatar = currentUser.avatar; }
         });
-        renderBoard(); await save();
-    }
-}
-
-async function deleteCard(cardId) {
-    if(confirm("Excluir?")) {
-        boardState.forEach(col => col.cards = col.cards.filter(c => c.id !== cardId));
         renderBoard(); await save();
     }
 }
 
 function renderBoard() {
     const board = document.getElementById('kanban-board');
-    const searchTerm = document.getElementById('board-search').value.toLowerCase();
-    
+    const search = document.getElementById('board-search').value.toLowerCase();
+    const today = new Date().toISOString().split('T')[0];
+
     board.innerHTML = boardState.map(col => {
-        const filteredCards = col.cards.filter(card => 
-            card.content.toLowerCase().includes(searchTerm) || 
-            card.priority.label.toLowerCase().includes(searchTerm) ||
-            card.owner.toLowerCase().includes(searchTerm)
+        const filtered = col.cards.filter(c => 
+            c.content.toLowerCase().includes(search) || 
+            c.owner.toLowerCase().includes(search) ||
+            c.priorityClass.includes(search)
         );
 
         return `
         <div class="column">
-            <div class="column-header">${col.title} (${filteredCards.length})</div>
-            <div class="card-list" id="${col.id}" ondragover="event.preventDefault()" ondrop="drop(event, '${col.id}')">
-                ${filteredCards.map(card => `
-                    <div class="card" id="${card.id}" draggable="true" ondragstart="drag(event)" ondblclick="deleteCard('${card.id}')">
-                        <span class="priority-tag ${card.priority.class}">${card.priority.label}</span>
+            <div class="column-header">${col.title} (${filtered.length})</div>
+            <div class="card-list" ondragover="event.preventDefault()" ondrop="drop(event, '${col.id}')">
+                ${filtered.map(card => {
+                    const isOverdue = card.deadline < today && col.id !== 'done';
+                    return `
+                    <div class="card ${card.priorityClass}" id="${card.id}" draggable="true" ondragstart="drag(event)" ondblclick="deleteCard('${card.id}')">
+                        <span class="priority-tag">${card.priorityClass.replace('prio-', '')}</span>
                         <div class="card-content">${card.content}</div>
                         <div class="card-footer">
-                            <span onclick="takeTask('${card.id}')" style="cursor:pointer">👤 @${card.owner}</span>
-                            <div class="owner-info">
-                                <img src="${card.ownerAvatar}" title="Responsável: ${card.owner}">
+                            <div class="deadline ${isOverdue ? 'deadline-overdue' : ''}">📅 ${card.deadline}</div>
+                            <div class="owner-badge" onclick="takeTask('${card.id}')">
+                                <img src="${card.ownerAvatar}"> @${card.owner}
                             </div>
                         </div>
-                    </div>
-                `).join('')}
+                    </div>`;
+                }).join('')}
             </div>
             <button class="add-btn" onclick="addCard('${col.id}')">+ Novo Card</button>
         </div>`;
     }).join('');
 }
 
-// Drag & Drop Simplificado
 function drag(e) { e.dataTransfer.setData("text", e.target.id); }
 async function drop(e, colId) {
     const id = e.dataTransfer.getData("text");
@@ -121,10 +98,12 @@ async function drop(e, colId) {
         const i = c.cards.findIndex(x => x.id === id);
         if(i > -1) card = c.cards.splice(i, 1)[0];
     });
-    boardState.find(c => c.id === colId).cards.push(card);
+    if(card) boardState.find(c => c.id === colId).cards.push(card);
     renderBoard(); await save();
 }
 
-function shareBoard() { navigator.clipboard.writeText(window.location.href); alert("Link copiado!"); }
+async function deleteCard(id) { if(confirm("Deletar?")) { boardState.forEach(col => col.cards = col.cards.filter(c => c.id !== id)); renderBoard(); await save(); } }
+function changeUser() { const u = prompt("GitHub User:"); if(u) { localStorage.setItem('kanban_user', u); location.reload(); } }
+function shareBoard() { navigator.clipboard.writeText(window.location.href); alert("Copiado!"); }
 
 document.addEventListener('DOMContentLoaded', () => { fetchUserProfile(GITHUB_USER); initRealtime(); });
