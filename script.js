@@ -1,45 +1,146 @@
-:root { 
-    --primary: #000; --bg: #f4f4f4; --header-bg: #ffffff;
-    --sticky-todo: #ffff88; --sticky-doing: #7afaff; --sticky-done: #99ff99;
+const SUPABASE_URL = 'https://tuansquxjvbalzxnfglz.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR1YW5zcXV4anZiYWx6eG5mZ2x6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzOTIzNTYsImV4cCI6MjA4ODk2ODM1Nn0.C8FaFGWv0VyOew47NfYXfAl-ksx9TFlI6mkPWcV9diM'; 
+const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const urlParams = new URLSearchParams(window.location.search);
+let ROOM_NAME = urlParams.get('sala');
+let GITHUB_USER = localStorage.getItem('kanban_user') || 'edul0';
+let currentUser = { login: GITHUB_USER, avatar: `https://github.com/${GITHUB_USER}.png` };
+let boardState = [];
+let activityLogs = [];
+
+async function startApp() {
+    const container = document.getElementById('app-container');
+    if (!container) return;
+    if (!ROOM_NAME) { 
+        renderLanding(); 
+    } else {
+        await fetchUserProfile(GITHUB_USER);
+        renderMuralSkeleton();
+        initRoom();
+    }
 }
 
-body { background: var(--bg); font-family: 'Segoe UI', sans-serif; margin: 0; overflow: hidden; height: 100vh; }
-
-/* LANDING PAGE CLEAN */
-.landing-page { height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #fff; font-family: monospace; }
-.landing-page h1 { font-size: 4rem; margin: 0; letter-spacing: -3px; font-weight: 900; }
-.landing-page input { font-size: 2.5rem; border: none; border-bottom: 4px solid #000; outline: none; text-align: center; width: 80%; max-width: 600px; margin-top: 30px; font-family: monospace; padding: 10px; }
-
-/* HEADER */
-header { display: flex; justify-content: space-between; align-items: center; padding: 0 20px; background: var(--header-bg); border-bottom: 2px solid #000; height: 65px; box-sizing: border-box; }
-.header-left { display: flex; align-items: center; gap: 15px; }
-.user-profile { display: flex; align-items: center; gap: 8px; cursor: pointer; }
-.user-profile img { width: 35px !important; height: 35px !important; border-radius: 50%; border: 2px solid #000; object-fit: cover; }
-.room-info { background: #000; color: #0f0; padding: 5px 12px; border-radius: 4px; font-family: monospace; font-size: 12px; }
-
-/* BOARD */
-.board-container { display: flex; height: calc(100vh - 65px); padding: 20px; gap: 20px; overflow-x: auto; margin-right: 300px; box-sizing: border-box; }
-.column { flex: 1; min-width: 320px; background: rgba(0,0,0,0.03); border-radius: 12px; display: flex; flex-direction: column; border: 2px dashed #999; max-height: 100%; }
-.column-header { padding: 15px; font-weight: 800; text-align: center; text-transform: uppercase; font-size: 14px; }
-
-/* POST-ITS */
-.card-list { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-wrap: wrap; align-content: flex-start; gap: 20px; }
-.card { 
-    width: 220px; min-height: 220px; padding: 15px; box-shadow: 5px 5px 10px rgba(0,0,0,0.15); 
-    position: relative; display: flex; flex-direction: column; 
-    font-family: 'Comic Sans MS', cursive; box-sizing: border-box; overflow: hidden;
+function renderLanding() {
+    document.getElementById('app-container').innerHTML = `
+        <div class="landing-page">
+            <h1>Post-it Board /</h1>
+            <input type="text" id="room-input" placeholder="nome-da-sala" autofocus>
+            <p>Salas privadas estilo Dontpad.</p>
+        </div>`;
+    const input = document.getElementById('room-input');
+    input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter' && e.target.value) window.location.href = `?sala=${e.target.value.trim()}`;
+    });
 }
 
-/* FIX DA IMAGEM EXPLODINDO */
-.card img.attached-image { 
-    width: 100%; max-height: 120px; object-fit: cover; border-radius: 4px; 
-    margin-top: 10px; border: 1px solid rgba(0,0,0,0.1); 
+function renderMuralSkeleton() {
+    document.getElementById('app-container').innerHTML = `
+        <header>
+            <div class="header-left">
+                <div class="user-profile" onclick="changeUser()"><img src="${currentUser.avatar}"> <span>${currentUser.login}</span></div>
+                <div class="room-info" onclick="window.location.href='index.html'">Mural: <strong>${ROOM_NAME}</strong></div>
+                <input type="text" id="board-search" placeholder="Buscar..." oninput="renderBoard()" style="padding:5px 10px; border-radius:15px; border:1px solid #ccc; outline:none; margin-left:10px;">
+            </div>
+            <div class="actions">
+                <button onclick="shareBoard()" style="padding:8px 15px; background:#000; color:#fff; border:none; border-radius:4px; cursor:pointer; font-weight:bold;">Compartilhar</button>
+            </div>
+        </header>
+        <main id="kanban-board" class="board-container"></main>
+        <div class="side-panel">
+            <div class="panel-header">Status <span id="stats-content">0%</span></div>
+            <div class="panel-header">Histórico <button onclick="clearLogs()" style="border:none; background:transparent; cursor:pointer;">🗑️</button></div>
+            <div id="log-content"></div>
+        </div>`;
 }
 
-/* PRIORIDADES */
-.prio-alta { border-left: 10px solid #ff0000 !important; }
-.prio-media { border-left: 10px solid #ffa500 !important; }
-.prio-baixa { border-left: 10px solid #107c10 !important; }
+async function initRoom() {
+    let { data } = await _supabase.from('kanban_data').select('*').eq('room_name', ROOM_NAME).maybeSingle();
+    if (!data) {
+        const pass = prompt(`Mural "${ROOM_NAME}" é novo. Criar senha? (Vazio = público)`);
+        const initialState = [{id:"todo", title:"Para fazer", cards:[]},{id:"doing", title:"Em curso", cards:[]},{id:"done", title:"Concluído", cards:[]}];
+        const { data: newData } = await _supabase.from('kanban_data').insert([{ room_name: ROOM_NAME, state: initialState, logs: [], room_password: pass || null }]).select().single();
+        data = newData;
+        if(pass) sessionStorage.setItem(`auth_${ROOM_NAME}`, pass);
+    }
+    if (data.room_password) {
+        let auth = sessionStorage.getItem(`auth_${ROOM_NAME}`);
+        if (auth !== data.room_password) {
+            const p = prompt("Senha da sala:");
+            if (p === data.room_password) sessionStorage.setItem(`auth_${ROOM_NAME}`, p);
+            else { alert("Senha errada!"); window.location.href = "index.html"; return; }
+        }
+    }
+    boardState = data.state;
+    activityLogs = data.logs || [];
+    renderBoard(); renderLogs();
+    _supabase.channel(`room-${ROOM_NAME}`).on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'kanban_data', filter: `room_name=eq.${ROOM_NAME}` }, 
+    payload => { boardState = payload.new.state; activityLogs = payload.new.logs || []; renderBoard(); renderLogs(); }).subscribe();
+}
 
-.column:nth-child(1) .card { background: var(--sticky-todo); transform: rotate(-1.5deg); }
-.column:nth-child(2) .card { background: var(--sticky-doing);
+function renderBoard() {
+    const board = document.getElementById('kanban-board');
+    if (!board) return;
+    const search = document.getElementById('board-search').value.toLowerCase();
+    board.innerHTML = boardState.map(col => `
+        <div class="column">
+            <div class="column-header">${col.title} (${col.cards.length})</div>
+            <div class="card-list" ondragover="event.preventDefault()" ondrop="drop(event, '${col.id}')">
+                ${col.cards.filter(c => c.content.toLowerCase().includes(search)).map(card => `
+                    <div class="card ${card.priorityClass || 'prio-media'}" id="${card.id}" draggable="true" ondragstart="drag(event)" ondblclick="deleteCard('${card.id}')">
+                        <div class="card-content">${card.content}</div>
+                        ${card.imageUrl ? `<img src="${card.imageUrl}" class="attached-image">` : ''}
+                        <div style="font-size:9px; color:#999; margin-top:10px; cursor:pointer;" onclick="attachImage('${card.id}')">🖼️ Imagem</div>
+                        <div class="card-footer">
+                            <div class="owner-info" onclick="assignTask('${card.id}')">
+                                <img src="${card.ownerAvatar || 'https://github.com/identicons/ghost.png'}" onerror="this.src='https://github.com/identicons/ghost.png'">
+                                <span>@${card.owner || currentUser.login}</span>
+                            </div>
+                        </div>
+                    </div>`).join('')}
+            </div>
+            <button class="add-btn" onclick="addCard('${col.id}')">+ Novo Post-it</button>
+        </div>`).join('');
+}
+
+async function addCard(colId) {
+    const txt = prompt("Tarefa:"); if (!txt) return;
+    const p = prompt("Prioridade: 1-Alta, 2-Média, 3-Baixa", "2");
+    const prio = p === "1" ? "prio-alta" : (p === "3" ? "prio-baixa" : "prio-media");
+    boardState.find(c => c.id === colId).cards.push({ id: crypto.randomUUID(), content: txt, owner: currentUser.login, ownerAvatar: currentUser.avatar, priorityClass: prio, imageUrl: null });
+    renderBoard(); await save(`@${currentUser.login} criou card`);
+}
+
+async function attachImage(cardId) {
+    const url = prompt("Link da imagem:"); if (!url) return;
+    boardState.forEach(col => { const c = col.cards.find(x => x.id === cardId); if (c) c.imageUrl = url; });
+    renderBoard(); await save(`@${currentUser.login} anexou imagem`);
+}
+
+async function save(logMsg) {
+    if (logMsg) activityLogs.unshift({ msg: logMsg, time: new Date().toLocaleTimeString() });
+    await _supabase.from('kanban_data').update({ state: boardState, logs: activityLogs }).eq('room_name', ROOM_NAME);
+}
+
+function renderLogs() {
+    const lc = document.getElementById('log-content');
+    if(lc) lc.innerHTML = activityLogs.map(l => `<div class="log-entry"><span style="color:#888">[${l.time}]</span> ${l.msg}</div>`).join('');
+    const ok = boardState.find(c => c.id === 'done')?.cards.length || 0;
+    const tot = boardState.reduce((a, c) => a + c.cards.length, 0);
+    const st = document.getElementById('stats-content');
+    if(st) st.innerText = `${tot > 0 ? Math.round((ok/tot)*100) : 0}%`;
+}
+
+function shareBoard() { navigator.clipboard.writeText(window.location.href); alert("Link copiado!"); }
+async function fetchUserProfile(u) { try { const r = await fetch(`https://api.github.com/users/${u}`); const d = await r.json(); if(d.login) currentUser = { login: d.login, avatar: d.avatar_url }; } catch(e) {} }
+function changeUser() { const u = prompt("GitHub User:"); if(u) { localStorage.setItem('kanban_user', u); location.reload(); } }
+async function deleteCard(id) { if(confirm("Deletar?")) { boardState.forEach(c => c.cards = c.cards.filter(x => x.id !== id)); renderBoard(); await save(`Removido`); } }
+function drag(e) { e.dataTransfer.setData("text", e.target.id); }
+async function drop(e, colId) {
+    const id = e.dataTransfer.getData("text"); let card;
+    boardState.forEach(c => { const i = c.cards.findIndex(x => x.id === id); if(i > -1) card = c.cards.splice(i, 1)[0]; });
+    if(card) { boardState.find(c => c.id === colId).cards.push(card); renderBoard(); await save(`Movido`); }
+}
+async function assignTask(cardId) { const t = prompt("Delegar para:"); if(!t) return; const n = t.toLowerCase() === 'eu' ? currentUser.login : t.replace('@', ''); boardState.forEach(col => { const c = col.cards.find(x => x.id === cardId); if (c) { c.owner = n; c.ownerAvatar = `https://github.com/${n}.png`; } }); renderBoard(); await save(`Delegado para @${n}`); }
+
+if (document.readyState === 'complete' || document.readyState === 'interactive') { setTimeout(startApp, 1); } else { document.addEventListener('DOMContentLoaded', startApp); }
