@@ -4,30 +4,20 @@ const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const urlParams = new URLSearchParams(window.location.search);
 let ROOM_NAME = urlParams.get('sala');
-
-// GESTÃO DE PERFIL (Manual ou GitHub)
 let GITHUB_USER = localStorage.getItem('kanban_user') || 'edul0';
 let CUSTOM_NAME = localStorage.getItem('kanban_custom_name');
 let CUSTOM_AVATAR = localStorage.getItem('kanban_custom_avatar');
 
-let currentUser = { 
-    login: CUSTOM_NAME || GITHUB_USER, 
-    avatar: CUSTOM_AVATAR || `https://github.com/${GITHUB_USER}.png` 
-};
-
+let currentUser = { login: CUSTOM_NAME || GITHUB_USER, avatar: CUSTOM_AVATAR || `https://github.com/${GITHUB_USER}.png` };
 let boardState = [];
 let activityLogs = [];
 
 async function startApp() {
     const container = document.getElementById('app-container');
     if (!container) return;
-
-    // Aplica Modo Dark salvo
     if(localStorage.getItem('dark_mode') === 'true') document.body.classList.add('dark-mode');
-
-    if (!ROOM_NAME) { 
-        renderLanding(); 
-    } else {
+    if (!ROOM_NAME) renderLanding();
+    else {
         if (!CUSTOM_NAME) await fetchUserProfile(GITHUB_USER);
         renderMuralSkeleton();
         initRoom();
@@ -37,9 +27,12 @@ async function startApp() {
 function renderLanding() {
     document.getElementById('app-container').innerHTML = `
         <div class="landing-page">
-            <h1>Post-it Board /</h1>
+            <div class="logo-container">
+                <img src="marca.png" class="logo-img">
+                <h1>KSpace /</h1>
+            </div>
             <input type="text" id="room-input" placeholder="nome-da-sala" autofocus>
-            <p>Salas privadas com Modo Dark.</p>
+            <p>Sua produtividade em um novo patamar.</p>
         </div>`;
     const input = document.getElementById('room-input');
     input.addEventListener('keypress', (e) => {
@@ -51,13 +44,12 @@ function renderMuralSkeleton() {
     document.getElementById('app-container').innerHTML = `
         <header>
             <div class="header-left">
+                <img src="marca.png" class="header-logo" onclick="window.location.href='index.html'">
                 <div class="user-profile" onclick="manageProfile()"><img src="${currentUser.avatar}"> <span>${currentUser.login}</span></div>
-                <div class="room-info" onclick="window.location.href='index.html'">Mural: <strong>${ROOM_NAME}</strong></div>
+                <div class="room-info">Mural: <strong>${ROOM_NAME}</strong></div>
                 <button onclick="toggleDarkMode()" style="background:none; border:none; cursor:pointer; font-size:18px;">🌓</button>
             </div>
-            <div class="actions">
-                <button onclick="shareBoard()" style="padding:8px 15px; background:var(--primary); color:var(--header-bg); border:none; border-radius:4px; cursor:pointer; font-weight:bold;">Compartilhar</button>
-            </div>
+            <div class="actions"><button onclick="shareBoard()" style="padding:8px 15px; background:var(--primary); color:var(--header-bg); border:none; border-radius:4px; cursor:pointer; font-weight:bold;">Compartilhar</button></div>
         </header>
         <main id="kanban-board" class="board-container"></main>
         <div class="side-panel">
@@ -70,7 +62,7 @@ function renderMuralSkeleton() {
 async function initRoom() {
     let { data } = await _supabase.from('kanban_data').select('*').eq('room_name', ROOM_NAME).maybeSingle();
     if (!data) {
-        const pass = prompt(`Mural "${ROOM_NAME}" é novo. Criar senha? (Vazio = público)`);
+        const pass = prompt(`Mural "${ROOM_NAME}" é novo. Criar senha?`);
         const initialState = [{id:"todo", title:"Para fazer", cards:[]},{id:"doing", title:"Em curso", cards:[]},{id:"done", title:"Concluído", cards:[]}];
         const { data: newData } = await _supabase.from('kanban_data').insert([{ room_name: ROOM_NAME, state: initialState, logs: [], room_password: pass || null }]).select().single();
         data = newData;
@@ -96,7 +88,7 @@ function renderBoard() {
     if (!board) return;
     board.innerHTML = boardState.map(col => `
         <div class="column">
-            <div class="column-header">${col.title} (${col.cards.length})</div>
+            <div class="column-header">${col.title}</div>
             <div class="card-list" ondragover="event.preventDefault()" ondrop="drop(event, '${col.id}')">
                 ${col.cards.map(card => `
                     <div class="card ${card.priorityClass || 'prio-media'}" id="${card.id}" draggable="true" ondragstart="drag(event)" ondblclick="deleteCard('${card.id}')">
@@ -115,26 +107,8 @@ function renderBoard() {
         </div>`).join('');
 }
 
-function toggleDarkMode() {
-    const isDark = document.body.classList.toggle('dark-mode');
-    localStorage.setItem('dark_mode', isDark);
-}
-
-function manageProfile() {
-    const mode = prompt("1 - Usar GitHub\n2 - Nome/Foto Manual\n3 - Resetar", "2");
-    if (mode === "1") {
-        const nick = prompt("Nick GitHub:");
-        if(nick) { localStorage.removeItem('kanban_custom_name'); localStorage.setItem('kanban_user', nick); location.reload(); }
-    } else if (mode === "2") {
-        const name = prompt("Seu Nome:");
-        const img = prompt("URL da sua Foto:");
-        if(name && img) { localStorage.setItem('kanban_custom_name', name); localStorage.setItem('kanban_custom_avatar', img); location.reload(); }
-    } else if (mode === "3") {
-        localStorage.clear(); location.reload();
-    }
-}
-
-// ... (Restante das funções save, drag, drop, delete, attachImage, shareBoard do código anterior são mantidas)
+function toggleDarkMode() { const isDark = document.body.classList.toggle('dark-mode'); localStorage.setItem('dark_mode', isDark); }
+function manageProfile() { const mode = prompt("1-GitHub, 2-Manual, 3-Reset", "2"); if(mode==="1"){const n=prompt("GitHub:"); if(n){localStorage.removeItem('kanban_custom_name'); localStorage.setItem('kanban_user',n); location.reload();}} else if(mode==="2"){const n=prompt("Nome:"); const i=prompt("Foto URL:"); if(n&&i){localStorage.setItem('kanban_custom_name',n); localStorage.setItem('kanban_custom_avatar',i); location.reload();}} else if(mode==="3"){localStorage.clear(); location.reload();} }
 async function save(logMsg) { if (logMsg) activityLogs.unshift({ msg: logMsg, time: new Date().toLocaleTimeString() }); await _supabase.from('kanban_data').update({ state: boardState, logs: activityLogs }).eq('room_name', ROOM_NAME); }
 async function fetchUserProfile(u) { try { const r = await fetch(`https://api.github.com/users/${u}`); const d = await r.json(); if(d.login) currentUser = { login: d.login, avatar: d.avatar_url }; } catch(e) {} }
 function renderLogs() { const lc = document.getElementById('log-content'); if(lc) lc.innerHTML = activityLogs.map(l => `<div class="log-entry"><span style="color:#888">[${l.time}]</span> ${l.msg}</div>`).join(''); }
