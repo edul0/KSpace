@@ -139,3 +139,24 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchUserProfile(GITHUB_USER);
     initRealtime();
 });
+// Adicione isso ao final do seu script.js
+function shareBoard() {
+    const url = window.location.href;
+    navigator.clipboard.writeText(url).then(() => {
+        alert("Link do Workspace copiado! Mande para seu colega e vocês verão as alterações em tempo real.");
+    });
+}
+
+// Garanta que sua função save() esteja capturando o erro para logar
+async function save() {
+    const { error } = await _supabase
+        .from('kanban_data')
+        .update({ state: boardState })
+        .eq('id', 1);
+    
+    if (error) {
+        console.error("Erro ao salvar:", error.message);
+    } else {
+        console.log("Sincronizado com sucesso!");
+    }
+}
