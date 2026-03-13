@@ -12,7 +12,7 @@
     <header>
         <div class="header-left">
             <div class="user-profile" id="user-profile" onclick="toggleDarkMode()" title="Clique para Alternar Tema">
-                <span>Sincronizando...</span>
+                <span>Carregando...</span>
             </div>
             <div class="search-container">
                 <input type="text" id="board-search" placeholder="Filtrar por nome, @nick ou data..." oninput="renderBoard()">
@@ -25,6 +25,10 @@
     </header>
     <main id="kanban-board" class="board-container"></main>
     <div id="log-panel" class="log-panel">
+        <div class="stats-panel">
+            <div class="log-header">Produtividade</div>
+            <div id="stats-content" style="padding: 10px; font-size: 12px; font-weight: bold;"></div>
+        </div>
         <div class="log-header">
             Histórico
             <button class="clear-logs-btn" onclick="clearLogs()">🗑️</button>
