@@ -1,38 +1,139 @@
+/* === VARIÁVEIS === */
 :root { 
-    --primary: #0078d4; --danger: #d13438; --success: #107c10; 
-    --bg: #e5e5e5; --text: #333; --header-bg: #ffffff;
-    --sticky-todo: #ffff88; --sticky-doing: #7afaff; --sticky-done: #99ff99;
+    --primary: #000000; 
+    --danger: #d13438; 
+    --success: #107c10; 
+    --bg: #ffffff; 
+    --text: #000000; 
+    --sticky-todo: #ffff88; 
+    --sticky-doing: #7afaff; 
+    --sticky-done: #99ff99;
 }
-.dark-mode { --bg: #1a1a1b; --text: #f3f2f1; --header-bg: #2d2d2e; --sticky-todo: #dfdf7a; --sticky-doing: #6ad9dd; --sticky-done: #86df86; }
 
-body { background: var(--bg); font-family: 'Segoe UI', sans-serif; margin: 0; overflow: hidden; height: 100vh; color: var(--text); transition: 0.3s; }
+body { 
+    background: var(--bg); 
+    font-family: monospace; 
+    margin: 0; 
+    overflow: hidden; 
+    height: 100vh; 
+    color: var(--text);
+}
 
-/* TELA INICIAL STYLE DONTPAD */
-.landing-container { height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #fff; text-align: center; }
-.landing-container input { font-size: 2rem; border: none; border-bottom: 3px solid #000; outline: none; text-align: center; font-family: monospace; width: 80%; max-width: 500px; }
+/* === TELA INICIAL (LANDING PAGE) === */
+.landing-container {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+}
 
-header { display: flex; justify-content: space-between; align-items: center; padding: 0 20px; background: var(--header-bg); border-bottom: 2px solid rgba(0,0,0,0.1); height: 65px; z-index: 100; }
+#room-input {
+    font-size: 2.5rem;
+    border: none;
+    border-bottom: 3px solid #000;
+    outline: none;
+    text-align: center;
+    width: 80%;
+    max-width: 600px;
+    font-family: monospace;
+    padding: 10px;
+}
+
+/* === CABEÇALHO DO MURAL === */
+header { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    padding: 0 20px; 
+    background: #fff; 
+    border-bottom: 2px solid #000; 
+    height: 60px;
+}
+
 .header-left { display: flex; align-items: center; gap: 15px; }
-.user-profile img { width: 35px; height: 35px; border-radius: 50%; border: 2px solid var(--primary); object-fit: cover; }
 
-.room-info { background: #1a1a1a; color: #0f0; padding: 5px 12px; border-radius: 4px; font-family: monospace; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+/* Fix do Avatar Itadori */
+.user-profile img { 
+    width: 35px !important; 
+    height: 35px !important; 
+    border-radius: 50%; 
+    border: 2px solid #000;
+    object-fit: cover;
+}
 
-.board-container { display: flex; height: calc(100vh - 65px); padding: 20px; gap: 20px; overflow-x: auto; margin-right: 250px; }
-.column { flex: 1; min-width: 300px; background: rgba(0,0,0,0.05); border-radius: 12px; display: flex; flex-direction: column; border: 2px dashed rgba(0,0,0,0.1); }
-.column-header { padding: 15px; font-weight: 800; text-align: center; text-transform: uppercase; }
+.room-info { 
+    background: #000; 
+    color: #0f0; 
+    padding: 4px 10px; 
+    font-size: 12px;
+}
 
-.card-list { flex: 1; padding: 10px; overflow-y: auto; display: flex; flex-wrap: wrap; align-content: flex-start; gap: 15px; }
-.card { width: 180px; height: 180px; padding: 15px; box-shadow: 5px 5px 10px rgba(0,0,0,0.2); position: relative; cursor: grab; font-family: 'Comic Sans MS', cursive; display: flex; flex-direction: column; }
+/* === MURAL DE POST-ITS === */
+.board-container { 
+    display: flex; 
+    height: calc(100vh - 60px); 
+    padding: 20px; 
+    gap: 20px; 
+    overflow-x: auto;
+    background: #f0f0f0;
+}
+
+.column { 
+    flex: 1; 
+    min-width: 300px; 
+    background: rgba(0,0,0,0.03); 
+    border: 1px dashed #ccc;
+    display: flex; 
+    flex-direction: column; 
+}
+
+.column-header { padding: 10px; font-weight: bold; text-align: center; border-bottom: 1px solid #ddd; }
+
+.card-list { 
+    flex: 1; 
+    padding: 10px; 
+    display: flex; 
+    flex-wrap: wrap; 
+    gap: 15px; 
+    overflow-y: auto;
+}
+
+.card { 
+    width: 180px; 
+    height: 180px; 
+    padding: 15px; 
+    box-shadow: 5px 5px 7px rgba(0,0,0,0.1);
+    position: relative;
+    font-family: 'Comic Sans MS', cursive;
+    transition: 0.2s;
+}
 
 .column:nth-child(1) .card { background: var(--sticky-todo); transform: rotate(-1deg); }
-.column:nth-child(2) .card { background: var(--sticky-doing); transform: rotate(1.5deg); }
+.column:nth-child(2) .card { background: var(--sticky-doing); transform: rotate(1deg); }
 .column:nth-child(3) .card { background: var(--sticky-done); transform: rotate(-0.5deg); }
 
-.is-mine::after { content: '📌'; position: absolute; top: 5px; right: 5px; font-size: 18px; }
-.card-content { font-size: 14px; font-weight: bold; flex: 1; color: #000; overflow: hidden; }
+.card:hover { transform: scale(1.05) rotate(0deg); z-index: 10; }
 
-.log-panel { position: fixed; right: 0; top: 65px; width: 250px; height: calc(100% - 65px); background: var(--header-bg); border-left: 1px solid #ddd; display: flex; flex-direction: column; }
-.log-header { padding: 10px; background: rgba(0,0,0,0.05); font-weight: bold; font-size: 12px; display: flex; justify-content: space-between; }
-.log-content { flex: 1; overflow-y: auto; padding: 10px; font-size: 11px; }
+.card-content { font-size: 14px; font-weight: bold; flex: 1; overflow: hidden; }
 
-.add-btn { border: none; background: rgba(255,255,255,0.4); padding: 10px; cursor: pointer; font-weight: bold; width: 100%; border-radius: 0 0 10px 10px; color: var(--primary); }
+.card-footer { 
+    display: flex; 
+    justify-content: space-between; 
+    font-size: 9px; 
+    border-top: 1px solid rgba(0,0,0,0.1);
+    padding-top: 5px;
+}
+
+.add-btn { 
+    border: none; 
+    background: #fff; 
+    padding: 10px; 
+    cursor: pointer; 
+    font-weight: bold;
+    border-top: 1px solid #000;
+}
+
+/* Painel Lateral */
+.log-panel { width: 250px; background: #fff; border-left: 2px solid #000; padding: 10px; font-size: 11px; }
