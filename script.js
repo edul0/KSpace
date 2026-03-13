@@ -134,7 +134,13 @@ function renderBoard() {
             <button class="add-btn" onclick="addCard('${col.id}')">+ Adicionar tarefa</button>
         </div>
     `).join('');
-}
+} 
+
+// === INICIALIZAÇÃO ===
+document.addEventListener('DOMContentLoaded', () => {
+    fetchUserProfile(GITHUB_USER);
+    initRealtime();
+}); // <--- CHAVE E PARÊNTESE DE FECHAMENTO DO EVENTO
 
 // === START ===
 document.addEventListener('DOMContentLoaded', () => {
