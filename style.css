@@ -1,59 +1,93 @@
 :root {
-    --bg: #0079bf; /* Azul clássico de Kanban */
+    --bg-blue: #0079bf;
     --column-bg: #ebedf0;
     --card-bg: #ffffff;
-    --text: #172b4d;
+    --text-dark: #172b4d;
+    --text-gray: #5e6c84;
 }
 
 body {
-    background-color: var(--bg);
-    font-family: 'Segoe UI', sans-serif;
+    background-color: var(--bg-blue);
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     margin: 0;
+    color: var(--text-dark);
+}
+
+header h1 {
+    color: white;
+    text-align: center;
     padding: 20px;
+    margin: 0;
+    font-weight: 600;
 }
 
 .board-container {
     display: flex;
-    gap: 15px;
     align-items: flex-start;
+    padding: 20px;
+    gap: 15px;
+    overflow-x: auto;
+    height: calc(100vh - 80px);
 }
 
 .column {
     background-color: var(--column-bg);
     width: 280px;
-    border-radius: 10px;
+    min-width: 280px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
     padding: 10px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    max-height: 100%;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
 
 .column h3 {
     margin: 5px 10px 15px;
     font-size: 0.9rem;
-    color: #5e6c84;
     text-transform: uppercase;
+    color: var(--text-gray);
 }
 
 .card-list {
-    min-height: 100px; /* Importante para conseguir soltar cards em colunas vazias */
+    min-height: 20px;
+    flex-grow: 1;
 }
 
 .card {
-    background: var(--card-bg);
-    border-radius: 5px;
-    padding: 15px;
-    margin-bottom: 10px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    background-color: var(--card-bg);
+    border-radius: 4px;
+    padding: 12px;
+    margin-bottom: 8px;
+    box-shadow: 0 1px 0 rgba(9,30,66,0.25);
     cursor: grab;
-    transition: transform 0.1s;
-    color: var(--text);
-    font-weight: 500;
+    word-wrap: break-word;
+    font-size: 14px;
+    transition: background 0.2s;
 }
 
 .card:hover {
-    background: #f4f5f7;
+    background-color: #f4f5f7;
 }
 
 .card:active {
     cursor: grabbing;
-    transform: rotate(2deg);
+}
+
+.add-btn {
+    background: transparent;
+    border: none;
+    border-radius: 4px;
+    color: var(--text-gray);
+    cursor: pointer;
+    padding: 8px;
+    text-align: left;
+    font-weight: 500;
+    margin-top: 5px;
+    transition: background 0.2s, color 0.2s;
+}
+
+.add-btn:hover {
+    background-color: rgba(9,30,66,0.08);
+    color: var(--text-dark);
 }
