@@ -2,16 +2,15 @@
     --todo-header: #e1f5fe;
     --doing-header: #fff9c4;
     --done-header: #e8f5e9;
-    --primary-blue: #0078d4;
-    --text-main: #323130;
-    --bg-gray: #f3f2f1;
+    --primary: #0078d4;
+    --text: #323130;
 }
 
 body {
     background-color: #ffffff;
     font-family: 'Segoe UI', system-ui, sans-serif;
     margin: 0;
-    color: var(--text-main);
+    color: var(--text);
     overflow: hidden;
 }
 
@@ -19,7 +18,7 @@ header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px 25px;
+    padding: 10px 25px;
     border-bottom: 1px solid #edebe9;
     background: white;
 }
@@ -28,9 +27,13 @@ header {
     display: flex;
     align-items: center;
     gap: 10px;
-    font-weight: 600;
-    font-size: 14px;
+    cursor: pointer;
+    padding: 5px 10px;
+    border-radius: 4px;
+    transition: background 0.2s;
 }
+
+.user-profile:hover { background: #f3f2f1; }
 
 .user-profile img {
     width: 32px;
@@ -40,14 +43,14 @@ header {
 }
 
 .btn-share {
-    background: var(--primary-blue);
+    background: var(--primary);
     color: white;
     border: none;
     padding: 8px 16px;
     border-radius: 4px;
     cursor: pointer;
-    font-size: 13px;
     font-weight: 600;
+    font-size: 13px;
 }
 
 .board-container {
@@ -90,14 +93,11 @@ header {
     border: 1px solid #edebe9;
     border-left: 4px solid #ccc;
     cursor: grab;
-    transition: transform 0.1s;
 }
 
 .column:nth-child(1) .card { border-left-color: #0078d4; }
 .column:nth-child(2) .card { border-left-color: #fbc02d; }
 .column:nth-child(3) .card { border-left-color: #107c10; }
-
-.card:hover { border-color: var(--primary-blue); }
 
 .card-footer {
     display: flex;
@@ -109,6 +109,7 @@ header {
     width: 22px;
     height: 22px;
     border-radius: 50%;
+    border: 1px solid #eee;
 }
 
 .add-btn {
@@ -116,7 +117,7 @@ header {
     background: transparent;
     padding: 15px;
     text-align: left;
-    color: var(--primary-blue);
+    color: var(--primary);
     font-weight: 600;
     cursor: pointer;
 }
