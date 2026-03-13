@@ -29,7 +29,7 @@ function renderLanding() {
         <div class="landing-page">
             <div class="logo-container">
                 <img src="marca.png" class="logo-img">
-                <h1>KSpace</h1>
+                <h1>KSpace /</h1>
             </div>
             <input type="text" id="room-input" placeholder="nome-da-sala" autofocus>
             <p>Sua produtividade em um novo patamar.</p>
@@ -89,12 +89,12 @@ function renderBoard() {
     board.innerHTML = boardState.map(col => `
         <div class="column">
             <div class="column-header">${col.title}</div>
-            <div class="card-list" ondragover="event.preventDefault()" ondrop="drop(event, '${col.id}')">
+            <div class="card-list">
                 ${col.cards.map(card => `
                     <div class="card ${card.priorityClass || 'prio-media'}" id="${card.id}" draggable="true" ondragstart="drag(event)" ondblclick="deleteCard('${card.id}')">
                         <div class="card-content">${card.content}</div>
                         ${card.imageUrl ? `<img src="${card.imageUrl}" class="attached-image">` : ''}
-                        <div style="font-size:9px; color:#999; margin-top:10px; cursor:pointer;" onclick="attachImage('${card.id}')">🖼️ Imagem</div>
+                        <div style="font-size:9px; color:#999; margin-top:auto; cursor:pointer;" onclick="attachImage('${card.id}')">🖼️ Imagem</div>
                         <div class="card-footer">
                             <div class="owner-info" onclick="assignTask('${card.id}')">
                                 <img src="${card.ownerAvatar || 'https://github.com/identicons/ghost.png'}">
@@ -117,7 +117,7 @@ async function attachImage(cardId) { const url = prompt("Link da imagem:"); if (
 function shareBoard() { navigator.clipboard.writeText(window.location.href); alert("Link copiado!"); }
 async function deleteCard(id) { if(confirm("Deletar?")) { boardState.forEach(c => c.cards = c.cards.filter(x => x.id !== id)); renderBoard(); await save(`Removido`); } }
 function drag(e) { e.dataTransfer.setData("text", e.target.id); }
-async function drop(e, colId) { const id = e.dataTransfer.getData("text"); let card; boardState.forEach(c => { const i = c.cards.findIndex(x => x.id === id); if(i > -1) card = c.cards.splice(i, 1)[0]; }); if(card) { boardState.find(c => c.id === colId).cards.push(card); renderBoard(); await save(`Movido`); } }
+function drop(e, colId) { const id = e.dataTransfer.getData("text"); let card; boardState.forEach(c => { const i = c.cards.findIndex(x => x.id === id); if(i > -1) card = c.cards.splice(i, 1)[0]; }); if(card) { boardState.find(c => c.id === colId).cards.push(card); renderBoard(); save(`Movido`); } }
 async function assignTask(cardId) { const t = prompt("Delegar para:"); if(!t) return; const n = t.toLowerCase() === 'eu' ? currentUser.login : t; boardState.forEach(col => { const c = col.cards.find(x => x.id === cardId); if (c) { c.owner = n; c.ownerAvatar = n === currentUser.login ? currentUser.avatar : 'https://github.com/identicons/ghost.png'; } }); renderBoard(); await save(`Delegado para @${n}`); }
 
 if (document.readyState === 'complete' || document.readyState === 'interactive') { setTimeout(startApp, 1); } else { document.addEventListener('DOMContentLoaded', startApp); }
