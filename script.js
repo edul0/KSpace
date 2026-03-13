@@ -9,7 +9,35 @@ let boardState = [];
 
 // === 1. SINCRONIZAÇÃO EM TEMPO REAL ===
 async function initRealtime() {
-    console.log("Iniciando conexão com banco...");
+    console.log("Conectando ao ecossistema real-time...");
+    
+    // Busca a linha 1 como uma lista para evitar erros de formato
+    const { data, error } = await _supabase
+        .from('kanban_data')
+        .select('state')
+        .eq('id', 1);
+
+    if (error) {
+        console.error("Erro de permissão ou conexão:", error.message);
+        return;
+    }
+
+    if (data && data.length > 0) {
+        boardState = data[0].state;
+        renderBoard();
+        console.log("Dados carregados com sucesso!");
+    }
+
+    // Canal de atualização instantânea
+    _supabase
+        .channel('kanban-realtime')
+        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'kanban_data' }, payload => {
+            console.log("Opa! Alguém mexeu no board. Atualizando...");
+            boardState = payload.new.state;
+            renderBoard();
+        })
+        .subscribe();
+}
     
     // Busca dados iniciais da linha 1 (que você criou no banco)
     const { data, error } = await _supabase
