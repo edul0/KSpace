@@ -49,15 +49,23 @@ async function save() {
 async function fetchUserProfile(username) {
     try {
         const res = await fetch(`https://api.github.com/users/${username}`);
+        if (!res.ok) throw new Error(); // Se der 403, pula pro catch
+        
         const data = await res.json();
         currentUserAvatar = data.avatar_url;
         document.getElementById('user-profile').innerHTML = `
             <img src="${currentUserAvatar}" style="width:32px;border-radius:50%">
             <span>${data.name || data.login} | Workspace</span>
         `;
-    } catch(e) { console.error("Erro GitHub"); }
+    } catch(e) { 
+        console.warn("GitHub rate limit atingido. Usando avatar padrão.");
+        currentUserAvatar = 'https://via.placeholder.com/32'; // Avatar de reserva
+        document.getElementById('user-profile').innerHTML = `
+            <img src="${currentUserAvatar}" style="width:32px;border-radius:50%">
+            <span>Eduardo (Offline)</span>
+        `;
+    }
 }
-
 // === 3. CORE DO KANBAN ===
 function handleDrop(e) {
     e.preventDefault();
