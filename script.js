@@ -26,7 +26,7 @@ async function init() {
 function showLandingPage() {
     document.body.innerHTML = `
         <div style="height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; background:#fff; font-family:monospace;">
-            <h1 style="font-size:3rem; margin-bottom:10px;">Post-it Board /</h1>
+            <h1 style="font-size:3rem; margin-bottom:10px;">KanbanSpace</h1>
             <input type="text" id="new-room-input" placeholder="nome-da-sua-sala" 
                 style="font-size:1.5rem; padding:10px; border:none; border-bottom:2px solid #000; outline:none; text-align:center;">
             <p style="margin-top:20px; color:#666;">Crie ou acesse um mural instantâneo.</p>
