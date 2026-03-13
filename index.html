@@ -3,14 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>KSpace / Post It</title>
+    
+    <title>KSpace | Kanban Colaborativo Realtime</title>
+    <meta name="description" content="KSpace: Gestão visual de tarefas em tempo real com sincronização instantânea. Desenvolvido por Carlos Eduardo Matos Lesse (Eduardo).">
+    <meta name="keywords" content="Kanban, KSpace, Eduardo Matos, Gestão de TI, PUC Campinas, Supabase, Realtime, Colaboração, Vercel">
+    <meta name="author" content="Carlos Eduardo Matos Lesse">
+    <meta name="robots" content="index, follow">
+
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="KSpace / Gestão Ágil por Eduardo">
+    <meta property="og:description" content="Sistema de Kanban colaborativo com presença online e sincronização via Supabase.">
+    <meta property="og:url" content="https://k-space.vercel.app">
+    <meta property="og:image" content="https://k-space.vercel.app/marca.png">
+    <meta property="og:site_name" content="KSpace">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="KSpace | Kanban Realtime">
+    <meta name="twitter:description" content="Gestão visual de tarefas de alta performance.">
+    <meta name="twitter:image" content="https://k-space.vercel.app/marca.png">
+
     <link rel="icon" type="image/png" href="marca.png">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="style.css">
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
     <script src="script.js" defer></script>
 </head>
 <body>
     <div id="app-container"></div>
+
     <audio id="audio-paper" src="https://www.soundjay.com/office/paper-flick-1.mp3"></audio>
+
+    <noscript>
+        <div style="text-align: center; padding: 50px;">
+            <h1>KSpace</h1>
+            <p>Você precisa ativar o JavaScript para usar este sistema colaborativo.</p>
+        </div>
+    </noscript>
 </body>
 </html>
