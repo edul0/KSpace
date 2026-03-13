@@ -6,9 +6,11 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+<h1 class="text-3xl font-bold p-4">Project_Kanban</h1>
+<hr>
 
-    <div id="kanban-board" class="board-container">
-        </div>
+<div id="kanban-board" class="board-container"></div>
+
 
     <script src="script.js"></script>
     <script>
