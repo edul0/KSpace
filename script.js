@@ -22,7 +22,7 @@ function renderLanding() {
     document.getElementById('app-container').innerHTML = `
         <div style="height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; background:#f4f4f4;">
             <img src="marca.png" width="100">
-            <h1 style="font-size:3.5rem; letter-spacing:-2px; margin:15px 0;">KSpace /</h1>
+            <h1 style="font-size:3.5rem; letter-spacing:-2px; margin:15px 0;">KSpace </h1>
             <input type="text" id="sala-in" placeholder="nome-da-sala" style="font-size:2rem; text-align:center; border:3px solid #000; padding:10px; border-radius:12px; outline:none; width:300px;">
         </div>`;
     document.getElementById('sala-in').onkeypress = (e) => { if(e.key==='Enter') window.location.href=`?sala=${e.target.value}`; };
