@@ -1,61 +1,44 @@
 :root {
-    --bg-workspace: #faf9f8;
-    --sidebar-bg: #f3f2f1;
-    --primary-planner: #2b88d8;
-    --card-shadow: 0 1.6px 3.6px 0 rgba(0,0,0,0.132), 0 0.3px 0.9px 0 rgba(0,0,0,0.108);
-    --column-width: 320px;
+    --bg-page: #f3f2f1;
+    --column-bg: #eff6fc; /* Um azul bem clarinho para as colunas */
+    --card-bg: #ffffff;
+    --primary: #0078d4;
+    --text-black: #323130;
+    --text-secondary: #605e5d;
 }
 
 body {
-    background-color: var(--bg-workspace);
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background-color: var(--bg-page);
+    font-family: 'Segoe UI', system-ui, sans-serif;
     margin: 0;
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
+    color: var(--text-black);
 }
 
 header {
-    background: #ffffff;
-    border-bottom: 1px solid #edebe9;
-    padding: 10px 24px;
+    background: white;
+    padding: 12px 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
 }
 
-header h1 {
-    font-size: 18px;
-    color: #323130;
-    margin: 0;
-}
-
-.actions-bar {
-    display: flex;
-    gap: 10px;
-}
-
-.btn-share {
-    background: var(--primary-planner);
-    color: white;
-    border: none;
-    padding: 6px 16px;
-    border-radius: 2px;
-    font-size: 14px;
-    cursor: pointer;
-}
+header h1 { font-size: 18px; margin: 0; font-weight: 600; }
 
 .board-container {
     display: flex;
-    padding: 20px;
+    padding: 24px;
     gap: 20px;
+    align-items: flex-start;
     overflow-x: auto;
-    flex-grow: 1;
 }
 
 .column {
-    width: var(--column-width);
-    min-width: var(--column-width);
+    background: #f3f2f1; /* Fundo sutil para a coluna */
+    width: 300px;
+    min-width: 300px;
+    border-radius: 4px;
+    padding: 12px;
     display: flex;
     flex-direction: column;
 }
@@ -63,45 +46,42 @@ header h1 {
 .column-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    padding: 0 8px;
-    margin-bottom: 12px;
+    padding: 0 4px 12px 4px;
 }
 
 .column h3 {
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 600;
-    color: #323130;
     margin: 0;
-}
-
-.card-list {
-    min-height: 50px;
+    color: var(--text-black);
 }
 
 .card {
-    background: white;
+    background: var(--card-bg);
     border-radius: 4px;
-    padding: 16px;
-    margin-bottom: 12px;
-    box-shadow: var(--card-shadow);
-    border: 1px solid transparent;
-    cursor: grab;
-    transition: border 0.2s;
-}
-
-.card:hover {
-    border-color: #c8c6c4;
-}
-
-.add-card-area {
-    margin-top: 8px;
-}
-
-.add-card-area input {
-    width: 100%;
+    padding: 12px;
+    margin-bottom: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     border: 1px solid #edebe9;
-    padding: 8px;
-    box-sizing: border-box;
-    display: none; /* Aparece no clique */
+    cursor: grab;
+    font-size: 14px;
+    line-height: 1.4;
 }
+
+.card:hover { border-color: var(--primary); }
+
+.add-btn {
+    background: none;
+    border: none;
+    color: var(--primary);
+    cursor: pointer;
+    text-align: left;
+    padding: 8px;
+    font-weight: 600;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.add-btn:hover { background: rgba(0,120,212,0.05); border-radius: 4px; }
