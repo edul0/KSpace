@@ -22,7 +22,7 @@ function renderLanding() {
     document.getElementById('app-container').innerHTML = `
         <div style="height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; background:#f4f4f4; font-family:sans-serif;">
             <img src="marca.png" width="100">
-            <h1 style="font-size:3.5rem; letter-spacing:-2px; margin:15px 0;">KSpace /</h1>
+            <h1 style="font-size:3.5rem; letter-spacing:-2px; margin:15px 0;">KSpace</h1>
             <p style="color:#666; font-weight:bold; margin-bottom:20px;">DIGITE O NOME DA SALA</p>
             <input type="text" id="sala-in" placeholder="nome-da-sala" style="font-size:1.5rem; text-align:center; border:3px solid #000; padding:15px; border-radius:12px; outline:none; width:320px; box-shadow: 8px 8px 0px #000;">
         </div>`;
