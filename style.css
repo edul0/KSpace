@@ -7,7 +7,7 @@
 }
 
 body {
-    background-color: #ffffff;
+    background-color: #f3f2f1;
     font-family: 'Segoe UI', system-ui, sans-serif;
     margin: 0;
     color: var(--text);
@@ -19,25 +19,22 @@ header {
     justify-content: space-between;
     align-items: center;
     padding: 10px 25px;
-    border-bottom: 1px solid #edebe9;
     background: white;
+    border-bottom: 1px solid #edebe9;
 }
 
-.user-profile {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    cursor: pointer;
-    padding: 5px 10px;
-    border-radius: 4px;
-}
+.header-left { display: flex; align-items: center; gap: 30px; }
 
-.user-profile img {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
+.search-container input {
+    padding: 8px 15px;
     border: 1px solid #ddd;
+    border-radius: 20px;
+    width: 250px;
+    outline: none;
 }
+
+.user-profile { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+.user-profile img { width: 32px; height: 32px; border-radius: 50%; }
 
 .btn-share {
     background: var(--primary);
@@ -49,83 +46,54 @@ header {
     font-weight: 600;
 }
 
-.board-container {
-    display: flex;
-    height: calc(100vh - 60px);
-    overflow-x: auto;
-}
+.board-container { display: flex; height: calc(100vh - 60px); overflow-x: auto; padding: 10px; box-sizing: border-box; }
 
 .column {
     flex: 1;
     min-width: 300px;
-    border-right: 1px solid #edebe9;
+    background: #ebedef;
+    margin: 0 5px;
+    border-radius: 8px;
     display: flex;
     flex-direction: column;
 }
 
-.column-header {
-    padding: 20px;
-    text-align: center;
-    font-weight: 700;
-}
-
+.column-header { padding: 15px; font-weight: 700; text-align: center; border-radius: 8px 8px 0 0; }
 .column:nth-child(1) .column-header { background: var(--todo-header); color: #0078d4; }
 .column:nth-child(2) .column-header { background: var(--doing-header); color: #857c00; }
 .column:nth-child(3) .column-header { background: var(--done-header); color: #107c10; }
 
-.card-list {
-    flex-grow: 1;
-    padding: 15px;
-    overflow-y: auto;
-    min-height: 100px;
-}
+.card-list { flex-grow: 1; padding: 10px; overflow-y: auto; }
 
 .card {
     background: white;
-    border-radius: 4px;
-    padding: 15px;
-    margin-bottom: 12px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    border: 1px solid #edebe9;
-    border-left: 4px solid #ccc;
+    border-radius: 6px;
+    padding: 12px;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border-left: 5px solid #ccc;
     cursor: grab;
-    transition: transform 0.1s;
+    position: relative;
 }
 
-.card:active { transform: scale(0.98); }
-
-.card-footer {
-    display: flex;
-    justify-content: flex-end;
-    margin-top: 10px;
-}
-
-.card-avatar {
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-}
-
-.add-btn {
-    border: none;
-    background: transparent;
-    padding: 15px;
-    text-align: left;
-    color: var(--primary);
-    font-weight: 600;
-    cursor: pointer;
-}
-
-/* ETIQUETAS DE PRIORIDADE */
-.priority-tag {
-    font-size: 10px;
-    font-weight: 800;
-    padding: 2px 8px;
-    border-radius: 12px;
-    text-transform: uppercase;
-    display: inline-block;
-    margin-bottom: 8px;
-}
+.priority-tag { font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 10px; text-transform: uppercase; margin-bottom: 8px; display: inline-block; }
 .prio-alta { background: #fee2e2; color: #dc2626; }
 .prio-media { background: #fef3c7; color: #d97706; }
 .prio-baixa { background: #dcfce7; color: #16a34a; }
+
+.card-content { font-size: 14px; font-weight: 500; margin-bottom: 15px; }
+
+.card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid #eee;
+    padding-top: 8px;
+    font-size: 10px;
+    color: #666;
+}
+
+.owner-info { display: flex; align-items: center; gap: 5px; cursor: help; }
+.owner-info img { width: 18px; height: 18px; border-radius: 50%; }
+
+.add-btn { border: none; background: transparent; padding: 12px; color: var(--primary); font-weight: 600; cursor: pointer; text-align: left; }
