@@ -3,13 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kanban Space|Ecosystem</title>
+    <title>KanbanSpace| Ecosystem</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
     <link rel="stylesheet" href="style.css">
+    
+    <script src="script.js" defer></script>
 </head>
 <body>
     <header>
-        <div class="user-profile" id="user-profile" onclick="changeUser()" title="Clique para trocar de usuário">
-            <div class="skeleton-avatar"></div>
+        <div class="user-profile" id="user-profile" onclick="changeUser()">
             <span>Identificando...</span>
         </div>
         <div class="actions">
@@ -18,7 +22,5 @@
     </header>
 
     <main id="kanban-board" class="board-container"></main>
-
-    <script src="script.js" defer></script>
 </body>
 </html>
