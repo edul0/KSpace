@@ -7,6 +7,8 @@ let currentUser = { login: GITHUB_USER, avatar: 'https://cdn-icons-png.flaticon.
 let boardState = [];
 let activityLogs = [];
 
+const playSound = (id) => { const a = document.getElementById(id); if(a) { a.currentTime = 0; a.play(); } };
+
 async function initRealtime() {
     const { data } = await _supabase.from('kanban_data').select('*').eq('id', 1).single();
     if (data) { boardState = data.state || []; activityLogs = data.logs || []; renderBoard(); renderLogs(); updateStats(); }
@@ -25,7 +27,7 @@ async function fetchUserProfile(username) {
         const res = await fetch(`https://api.github.com/users/${username}`);
         const data = await res.json();
         if(data.login) currentUser = { login: data.login, avatar: data.avatar_url, name: data.name || data.login };
-    } catch(e) { console.warn("Usando Fallback Nick"); }
+    } catch(e) { console.warn("Fallback Ativado"); }
     document.getElementById('user-profile').innerHTML = `<img src="${currentUser.avatar}"> <span>${currentUser.name}</span>`;
 }
 
@@ -37,9 +39,9 @@ function updateStats() {
 }
 
 async function addCard(colId) {
-    const content = prompt("O que escrever no Post-it?"); if (!content) return;
+    const content = prompt("Conteúdo do Post-it:"); if (!content) return;
     const p = prompt("Prioridade: 1-Alta, 2-Média, 3-Baixa");
-    const date = prompt("Prazo (AAAA-MM-DD):", new Date().toISOString().split('T')[0]);
+    const date = prompt("Entrega (AAAA-MM-DD):", new Date().toISOString().split('T')[0]);
     const prios = {"1":"prio-alta", "2":"prio-media", "3":"prio-baixa"};
     
     boardState.find(c => c.id === colId).cards.push({
@@ -47,7 +49,8 @@ async function addCard(colId) {
         deadline: date, createdAt: new Date().toLocaleString('pt-BR'),
         owner: currentUser.login, ownerAvatar: currentUser.avatar, checklist: []
     });
-    renderBoard(); await save(`@${currentUser.login} colou um post-it: ${content}`);
+    playSound('audio-paper');
+    renderBoard(); await save(`@${currentUser.login} colou um post-it`);
 }
 
 function renderBoard() {
@@ -64,21 +67,55 @@ function renderBoard() {
             <div class="card-list" ondragover="event.preventDefault()" ondrop="drop(event, '${col.id}')">
                 ${filtered.map(card => `
                     <div class="card ${card.priorityClass} ${card.owner === currentUser.login ? 'is-mine' : ''}" id="${card.id}" draggable="true" ondragstart="drag(event)" ondblclick="deleteCard('${card.id}')">
-                        <div class="card-info-row"><span>📌 ${card.createdAt}</span></div>
+                        <div class="card-info-row"><span>${card.createdAt}</span></div>
                         <div class="card-content">${card.content}</div>
                         <div class="checklist-container">
                             ${card.checklist.map(i => `<div class="checklist-item ${i.done ? 'done' : ''}" onclick="toggleCheck('${card.id}', '${i.id}')">${i.done ? '✓' : '○'} ${i.text}</div>`).join('')}
-                            <div style="cursor:pointer; color:var(--primary); font-size:9px" onclick="addCheckItem('${card.id}')">+ add item</div>
+                            <div style="cursor:pointer; color:var(--primary); font-size:9px" onclick="addCheckItem('${card.id}')">+ subtarefa</div>
                         </div>
                         <div class="card-footer">
                             <span class="${card.deadline < today && col.id !== 'done' ? 'deadline-alert' : ''}">⏰ ${card.deadline}</span>
-                            <div class="owner-badge" onclick="takeTask('${card.id}')"><img src="${card.ownerAvatar}"></div>
+                            <div class="owner-info" onclick="assignTask('${card.id}')" title="Clique para atribuir dono">
+                                <img src="${card.ownerAvatar}">
+                                <span>@${card.owner}</span>
+                            </div>
                         </div>
                     </div>`).join('')}
             </div>
             <button class="add-btn" onclick="addCard('${col.id}')">+ Novo Post-it</button>
         </div>`;
     }).join('');
+}
+
+// NOVA FUNÇÃO DE ATRIBUIÇÃO FLEXÍVEL
+async function assignTask(cardId) {
+    const choice = prompt("Atribuir esta tarefa:\n1 - Para mim\n2 - Para outro usuário (digite o nick)");
+    
+    if (choice === "1") {
+        boardState.forEach(col => {
+            const card = col.cards.find(c => c.id === cardId);
+            if(card) {
+                card.owner = currentUser.login;
+                card.ownerAvatar = currentUser.avatar;
+            }
+        });
+        playSound('audio-click');
+        renderBoard(); await save(`@${currentUser.login} assumiu uma tarefa`);
+    } else if (choice && choice !== "1") {
+        const targetNick = choice === "2" ? prompt("Digite o nick do GitHub do responsável:") : choice;
+        if (targetNick) {
+            boardState.forEach(col => {
+                const card = col.cards.find(c => c.id === cardId);
+                if(card) {
+                    card.owner = targetNick;
+                    // Tenta buscar o avatar do novo dono
+                    card.ownerAvatar = `https://github.com/${targetNick}.png`;
+                }
+            });
+            playSound('audio-click');
+            renderBoard(); await save(`@${currentUser.login} delegou tarefa para @${targetNick}`);
+        }
+    }
 }
 
 async function addCheckItem(cardId) {
@@ -90,17 +127,13 @@ async function toggleCheck(cardId, itemId) {
     boardState.forEach(col => { const card = col.cards.find(c => c.id === cardId); if(card) { const it = card.checklist.find(i => i.id === itemId); if(it) it.done = !it.done; } });
     renderBoard(); await save();
 }
-async function takeTask(cardId) {
-    boardState.forEach(col => { const card = col.cards.find(c => c.id === cardId); if(card) { card.owner = currentUser.login; card.ownerAvatar = currentUser.avatar; } });
-    renderBoard(); await save(`@${currentUser.login} pegou um post-it`);
-}
-async function deleteCard(id) { if(confirm("Rasgar post-it?")) { boardState.forEach(col => col.cards = col.cards.filter(c => c.id !== id)); renderBoard(); await save(`@${currentUser.login} removeu um post-it`); } }
+async function deleteCard(id) { if(confirm("Remover post-it?")) { boardState.forEach(col => col.cards = col.cards.filter(c => c.id !== id)); renderBoard(); await save(`@${currentUser.login} removeu um post-it`); } }
 function renderLogs() { document.getElementById('log-content').innerHTML = activityLogs.map(l => `<div class="log-entry"><strong>[${l.time}]</strong> ${l.msg}</div>`).join(''); }
 function drag(e) { e.dataTransfer.setData("text", e.target.id); }
 async function drop(e, colId) {
     const id = e.dataTransfer.getData("text"); let card;
     boardState.forEach(c => { const i = c.cards.findIndex(x => x.id === id); if(i > -1) card = c.cards.splice(i, 1)[0]; });
-    if(card) { boardState.find(c => c.id === colId).cards.push(card); renderBoard(); await save(`@${currentUser.login} moveu para ${colId}`); }
+    if(card) { boardState.find(c => c.id === colId).cards.push(card); playSound('audio-paper'); renderBoard(); await save(`@${currentUser.login} moveu para ${colId}`); }
 }
 function toggleDarkMode() { document.body.classList.toggle('dark-mode'); }
 function changeUser() { const u = prompt("GitHub User:"); if(u) { localStorage.setItem('kanban_user', u); location.reload(); } }
