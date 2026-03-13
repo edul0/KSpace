@@ -34,8 +34,7 @@ function renderLanding() {
             <input type="text" id="room-input" placeholder="nome-da-sala" autofocus>
             <p>Sua produtividade em um novo patamar.</p>
         </div>`;
-    const input = document.getElementById('room-input');
-    input.addEventListener('keypress', (e) => {
+    document.getElementById('room-input').addEventListener('keypress', (e) => {
         if (e.key === 'Enter' && e.target.value) window.location.href = `?sala=${e.target.value.trim()}`;
     });
 }
@@ -88,7 +87,7 @@ function renderBoard() {
     if (!board) return;
     board.innerHTML = boardState.map(col => `
         <div class="column">
-            <div class="column-header">${col.title}</div>
+            <div class="column-header">${col.title} (${col.cards.length})</div>
             <div class="card-list">
                 ${col.cards.map(card => `
                     <div class="card ${card.priorityClass || 'prio-media'}" id="${card.id}" draggable="true" ondragstart="drag(event)" ondblclick="deleteCard('${card.id}')">
@@ -111,13 +110,13 @@ function toggleDarkMode() { const isDark = document.body.classList.toggle('dark-
 function manageProfile() { const mode = prompt("1-GitHub, 2-Manual, 3-Reset", "2"); if(mode==="1"){const n=prompt("GitHub:"); if(n){localStorage.removeItem('kanban_custom_name'); localStorage.setItem('kanban_user',n); location.reload();}} else if(mode==="2"){const n=prompt("Nome:"); const i=prompt("Foto URL:"); if(n&&i){localStorage.setItem('kanban_custom_name',n); localStorage.setItem('kanban_custom_avatar',i); location.reload();}} else if(mode==="3"){localStorage.clear(); location.reload();} }
 async function save(logMsg) { if (logMsg) activityLogs.unshift({ msg: logMsg, time: new Date().toLocaleTimeString() }); await _supabase.from('kanban_data').update({ state: boardState, logs: activityLogs }).eq('room_name', ROOM_NAME); }
 async function fetchUserProfile(u) { try { const r = await fetch(`https://api.github.com/users/${u}`); const d = await r.json(); if(d.login) currentUser = { login: d.login, avatar: d.avatar_url }; } catch(e) {} }
-function renderLogs() { const lc = document.getElementById('log-content'); if(lc) lc.innerHTML = activityLogs.map(l => `<div class="log-entry"><span style="color:#888">[${l.time}]</span> ${l.msg}</div>`).join(''); }
+function renderLogs() { const lc = document.getElementById('log-content'); if(lc) lc.innerHTML = activityLogs.map(l => `<div class="log-entry"><span>[${l.time}]</span> ${l.msg}</div>`).join(''); }
 async function addCard(colId) { const txt = prompt("Tarefa:"); if (!txt) return; const p = prompt("1-Alta, 2-Média, 3-Baixa", "2"); const prio = p === "1" ? "prio-alta" : (p === "3" ? "prio-baixa" : "prio-media"); boardState.find(c => c.id === colId).cards.push({ id: crypto.randomUUID(), content: txt, owner: currentUser.login, ownerAvatar: currentUser.avatar, priorityClass: prio, imageUrl: null }); renderBoard(); await save(`@${currentUser.login} criou card`); }
 async function attachImage(cardId) { const url = prompt("Link da imagem:"); if (!url) return; boardState.forEach(col => { const c = col.cards.find(x => x.id === cardId); if (c) c.imageUrl = url; }); renderBoard(); await save(`@${currentUser.login} anexou imagem`); }
 function shareBoard() { navigator.clipboard.writeText(window.location.href); alert("Link copiado!"); }
 async function deleteCard(id) { if(confirm("Deletar?")) { boardState.forEach(c => c.cards = c.cards.filter(x => x.id !== id)); renderBoard(); await save(`Removido`); } }
 function drag(e) { e.dataTransfer.setData("text", e.target.id); }
 function drop(e, colId) { const id = e.dataTransfer.getData("text"); let card; boardState.forEach(c => { const i = c.cards.findIndex(x => x.id === id); if(i > -1) card = c.cards.splice(i, 1)[0]; }); if(card) { boardState.find(c => c.id === colId).cards.push(card); renderBoard(); save(`Movido`); } }
-async function assignTask(cardId) { const t = prompt("Delegar para:"); if(!t) return; const n = t.toLowerCase() === 'eu' ? currentUser.login : t; boardState.forEach(col => { const c = col.cards.find(x => x.id === cardId); if (c) { c.owner = n; c.ownerAvatar = n === currentUser.login ? currentUser.avatar : 'https://github.com/identicons/ghost.png'; } }); renderBoard(); await save(`Delegado para @${n}`); }
+async function assignTask(cardId) { const t = prompt("Delegar para:"); if(!t) return; boardState.forEach(col => { const c = col.cards.find(x => x.id === cardId); if (c) { c.owner = t; c.ownerAvatar = 'https://github.com/identicons/ghost.png'; } }); renderBoard(); await save(`Delegado`); }
 
 if (document.readyState === 'complete' || document.readyState === 'interactive') { setTimeout(startApp, 1); } else { document.addEventListener('DOMContentLoaded', startApp); }
