@@ -37,7 +37,7 @@ async function startApp() {
 function renderLanding() {
     document.getElementById('app-container').innerHTML = `
         <div class="landing-page">
-            <h1>KanbanSpace /</h1>
+            <h1>Post-it Board /</h1>
             <input type="text" id="room-input" placeholder="nome-da-sala" autofocus>
             <p>Salas privadas com Modo Dark.</p>
         </div>`;
